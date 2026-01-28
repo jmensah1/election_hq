@@ -1,0 +1,142 @@
+<?php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Resources\VoterResource\Pages;
+use App\Models\OrganizationUser;
+use Filament\Forms;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+
+class VoterResource extends Resource
+{
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        if (!auth()->user()->is_super_admin && function_exists('current_organization_id') && current_organization_id()) {
+            $query->where('organization_id', current_organization_id());
+        }
+
+        return $query;
+    }
+
+    protected static ?string $model = OrganizationUser::class;
+
+    protected static ?string $label = 'Voter';
+
+    protected static ?string $pluralLabel = 'Voters / Users';
+
+    protected static ?string $navigationIcon = 'heroicon-o-users';
+
+    protected static ?string $navigationGroup = 'User Management';
+
+    public static function form(Form $form): Form
+    {
+        return $form
+            ->schema([
+                Forms\Components\Select::make('organization_id')
+                    ->relationship('organization', 'name')
+                    ->required()
+                    ->hidden(fn () => function_exists('current_organization_id') && current_organization_id())
+                    ->dehydrated()
+                    ->default(fn () => function_exists('current_organization_id') ? current_organization_id() : null),
+
+                Forms\Components\TextInput::make('voter_id')
+                    ->required()
+                    ->maxLength(50)
+                    ->label('Voter ID / Student ID'),
+                
+                Forms\Components\TextInput::make('allowed_email')
+                    ->email()
+                    ->required()
+                    ->maxLength(255),
+                
+                Forms\Components\Select::make('role')
+                    ->options([
+                        'voter' => 'Voter',
+                        'election_officer' => 'Election Officer',
+                        'admin' => 'Admin',
+                    ])
+                    ->required()
+                    ->default('voter'),
+                
+                Forms\Components\Select::make('status')
+                    ->options([
+                        'pending' => 'Pending (Not Logged In)',
+                        'active' => 'Active',
+                        'suspended' => 'Suspended',
+                    ])
+                    ->default('pending')
+                    ->required(),
+                
+                Forms\Components\Toggle::make('can_vote')
+                    ->default(true),
+                
+                Forms\Components\TextInput::make('department')
+                    ->maxLength(100),
+                
+                // Read-only link to actual user if exists
+                Forms\Components\Select::make('user_id')
+                    ->relationship('user', 'name')
+                    ->disabled()
+                    ->label('Linked User Account'),
+            ]);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                Tables\Columns\TextColumn::make('voter_id')->searchable()->sortable(),
+                Tables\Columns\TextColumn::make('allowed_email')->searchable(),
+                Tables\Columns\TextColumn::make('role')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'admin' => 'danger',
+                        'election_officer' => 'warning',
+                        'voter' => 'success',
+                    }),
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'active' => 'success',
+                        'pending' => 'gray',
+                        'suspended' => 'danger',
+                    }),
+                Tables\Columns\IconColumn::make('can_vote')->boolean(),
+                Tables\Columns\TextColumn::make('user.name')->label('Linked User'),
+            ])
+            ->filters([
+                Tables\Filters\SelectFilter::make('role'),
+                Tables\Filters\SelectFilter::make('status'),
+            ])
+            ->actions([
+                Tables\Actions\EditAction::make(),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]),
+            ]);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            //
+        ];
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListVoters::route('/'),
+            'create' => Pages\CreateVoter::route('/create'),
+            'edit' => Pages\EditVoter::route('/{record}/edit'),
+        ];
+    }
+}

@@ -1,0 +1,21 @@
+12:57:53 User Access Check Failed: No current_organization_id found.
+13:00:28 Middleware Running: upsa.elections-hq.me
+13:00:28 User Access Check Success: User 3 allowed
+13:02:03 Middleware Running: upsa.elections-hq.me
+13:02:03 User Access Check Success: User 3 allowed
+13:02:11 Middleware Running: upsa.elections-hq.me
+13:02:12 User Access Check Success: User 3 allowed
+13:02:34 Middleware Running: upsa.elections-hq.me
+13:02:35 User Access Check Success: User 3 allowed
+13:02:55 Middleware Running: upsa.elections-hq.me
+13:02:55 User Access Check Success: User 3 allowed
+13:03:03 Middleware Running: upsa.elections-hq.me
+13:03:04 User Access Check Success: User 3 allowed
+13:03:59 Middleware Running: elections-hq.me
+13:04:00 Middleware Running: elections-hq.me
+13:05:53 Middleware Running: elections-hq.me
+13:05:55 Middleware Running: elections-hq.me
+13:06:03 Middleware Running: elections-hq.me
+13:06:07 Middleware Running: elections-hq.me
+13:06:10 Middleware Running: elections-hq.me
+13:06:14 Middleware Running: elections-hq.me

@@ -19,6 +19,7 @@ class SetOrganizationContext
     {
         $host = $request->getHost();
         $organization = null;
+
         
         // 1. Check for Custom Domain
         $organization = Organization::where('custom_domain', $host)

@@ -42,7 +42,9 @@ npm install alpinejs
 Edit `.env` file with:
 - Database credentials (MySQL)
 - Redis connection for sessions/cache/queue
-- Google OAuth credentials (CLIENT_ID, CLIENT_SECRET, REDIRECT_URI)
+- [x] **Configure Google OAuth** `[P1]`
+    - [x] Add credentials to `.env` (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI) `[User Action]`
+    - [x] Update `config/services.php` to use env vars
 - Mail configuration ([comment:Mailgun] SMTP)
 - App URL and timezone
 
@@ -138,93 +140,94 @@ Add middleware to appropriate route groups in `bootstrap/app.php`.
 ## Phase 4: Authentication System
 
 ### Task 4.1: Configure Socialite for Google
-In `config/services.php`, add Google OAuth configuration.
+- [x] In `config/services.php`, add Google OAuth configuration.
 
 ### Task 4.2: Create Auth Routes
-Define routes for:
-- `GET /auth/google` - Redirect to Google
-- `GET /auth/google/callback` - Handle callback
-- `POST /logout` - Logout
+- [x] Define routes for:
+    - `GET /auth/google` - Redirect to Google
+    - `GET /auth/google/callback` - Handle callback
+    - `POST /logout` - Logout
 
 ### Task 4.3: Create GoogleAuthController
-Implement controller that:
-- Redirects to Google OAuth
-- Handles callback
-- Checks if email exists in organization_user (the "guest list")
-- Creates/updates user record
-- Links user to organization membership
-- Sets status to 'active' on first login
-- Logs user in and redirects to voter portal
+- [x] Implement controller that:
+    - Redirects to Google OAuth
+    - Handles callback
+    - Checks if email exists in organization_user (the "guest list")
+    - Creates/updates user record
+    - Links user to organization membership
+    - Sets status to 'active' on first login
+    - Logs user in and redirects to voter portal
 
 ### Task 4.4: Create GoogleAuthService
-Extract business logic from controller:
-- `handleLogin($googleUser)` - Main authentication flow
-- Validate email against organization's allowed list
-- Return user or throw appropriate exception
+- [x] Extract business logic from controller:
+    - `handleLogin($googleUser)` - Main authentication flow
+    - Validate email against organization's allowed list
+    - Return user or throw appropriate exception
 
 ### Task 4.5: Admin Authentication
-Configure Filament to use standard Laravel auth for admin users (email/password).
+- [x] Configure Filament to use standard Laravel auth for admin users (email/password).
+    - *Note: Filament defaults to standard auth, no extra config needed for Phase 4 MVP.*
 
 ---
 
 ## Phase 5: Filament Admin Panel
 
 ### Task 5.1: Create Admin User Resource
-Filament resource to manage admin/staff users with:
-- List, create, edit, delete
-- Role assignment
-- Organization assignment
+- [x] Filament resource to manage admin/staff users with:
+    - List, create, edit, delete
+    - Role assignment
+    - Organization assignment
 
 ### Task 5.2: Create Organization Resource
-Filament resource for organizations:
-- Name, slug, subdomain, custom domain
-- Logo upload
-- Timezone selection
-- Subscription management
-- Settings JSON editor
+- [x] Filament resource for organizations:
+    - Name, slug, subdomain, custom domain
+    - Logo upload
+    - Timezone selection
+    - Subscription management
+    - Settings JSON editor
 
 ### Task 5.3: Create Election Resource
-Filament resource for elections:
-- Title, description, slug
-- All lifecycle dates (nomination, vetting, voting)
-- Status management with state transitions
-- Settings (require_photo, max_votes_per_position)
+- [x] Filament resource for elections:
+    - Title, description, slug
+    - All lifecycle dates (nomination, vetting, voting)
+    - Status management with state transitions
+    - Settings (require_photo, max_votes_per_position)
 
 ### Task 5.4: Create Position Resource
-Filament resource for positions:
-- Name, description
-- Display order (drag-drop reordering)
-- Max candidates, max votes per position
-- Relation manager within Election
+- [x] Filament resource for positions:
+    - Name, description
+    - Display order (drag-drop reordering)
+    - Max candidates, max votes per position
+    - Relation manager within Election
 
 ### Task 5.5: Create Candidate Resource
-Filament resource for candidates:
-- User selection (from organization members)
-- Position assignment
-- Photo upload
-- Manifesto text editor
-- Nomination status management
-- Vetting status with notes
+- [x] Filament resource for candidates:
+    - User selection (from organization members)
+    - Position assignment
+    - Photo upload
+    - Manifesto text editor
+    - Nomination status management
+    - Vetting status with notes
 
 ### Task 5.6: Create Voter Import Feature
-Filament action/page for:
-- CSV upload (voter_id, email columns)
-- Preview before import
-- Bulk insert into organization_user
-- Duplicate detection and handling
+- [x] Filament action/page for:
+    - CSV upload (voter_id, email columns)
+    - Preview before import
+    - Bulk insert into organization_user
+    - Duplicate detection and handling
 
 ### Task 5.7: Create Results Dashboard
-Filament page showing:
-- Vote counts per candidate per position
-- Participation statistics
-- Voting timeline (from vote_confirmations)
-- Export to PDF/CSV
+- [x] Filament page showing:
+    - Vote counts per candidate per position
+    - Participation statistics
+    - Voting timeline (from vote_confirmations)
+    - Export to PDF/CSV
 
 ### Task 5.8: Create Audit Log Viewer
-Filament resource for viewing audit logs:
-- Filterable by user, action, entity type
-- Date range filtering
-- Read-only (no edit/delete)
+- [x] Filament resource for viewing audit logs:
+    - Filterable by user, action, entity type
+    - Date range filtering
+    - Read-only (no edit/delete)
 
 ---
 
@@ -257,6 +260,12 @@ Validate incoming vote submission:
 - Each position requires a candidate selection
 - Candidate must belong to that position
 - Candidate must be approved (vetting_status = 'passed')
+
+### Task 6.5: Candidate Self-Service Portal
+- [ ] Create `CandidatePortal` Livewire component.
+- [ ] Implement file upload (photo) and manifesto editor.
+- [ ] Restrict access to users with linked Candidate records only.
+- [ ] Handle state transitions (pending_submission -> pending_vetting).
 
 ---
 
@@ -483,8 +492,8 @@ Basic accessibility checks:
 - [ ] All models with relationships
 - [ ] Multi-tenancy working (org isolation)
 - [ ] Google OAuth login working
-- [ ] Filament admin panel functional
-- [ ] Voter CSV import working
+- [x] Filament admin panel functional
+- [x] Voter CSV import working
 - [ ] Voting booth complete
 - [ ] Vote anonymity verified (no user link in votes table)
 - [ ] Double-voting prevented

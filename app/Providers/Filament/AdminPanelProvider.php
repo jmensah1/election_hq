@@ -41,6 +41,8 @@ class AdminPanelProvider extends PanelProvider
                 Widgets\FilamentInfoWidget::class,
             ])
             ->middleware([
+                \App\Http\Middleware\SetOrganizationContext::class,
+                \App\Http\Middleware\SetOrganizationTimezone::class,
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
