@@ -22,7 +22,8 @@ Route::middleware(['auth', 'web'])->get('/candidate-portal', App\Livewire\Candid
 
 // Voter Dashboard
 Route::middleware(['auth'])->prefix('vote')->name('voter.')->group(function () {
-    Route::get('/elections', function () {
-        return view('voter.dashboard');
-    })->name('elections.index');
+    Route::get('/elections', [App\Http\Controllers\Voter\VotingController::class, 'index'])->name('elections.index');
+    Route::get('/elections/{election}/vote', [App\Http\Controllers\Voter\VotingController::class, 'show'])->name('elections.show');
+    Route::get('/confirmation', [App\Http\Controllers\Voter\VotingController::class, 'confirmation'])->name('confirmation');
+    Route::get('/results/{election}', [App\Http\Controllers\Voter\VotingController::class, 'results'])->name('results');
 });

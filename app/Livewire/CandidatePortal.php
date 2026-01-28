@@ -5,7 +5,6 @@ namespace App\Livewire;
 use App\Models\Candidate;
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use Illuminate\Support\Facades\Storage;
 
 class CandidatePortal extends Component
 {
@@ -20,14 +19,17 @@ class CandidatePortal extends Component
     {
         $user = auth()->user();
         
-        // 1. Try to find by existing link
+        // 1. Try to find by existing link (Primary Method)
         $this->candidate = Candidate::where('user_id', $user->id)
             ->whereIn('nomination_status', ['pending_submission', 'pending_vetting'])
             ->latest()
             ->first();
 
-        // 2. If not found, try to find by EMAIL (Invitation) and claim it
-        if (!$this->candidate) {
+        // 2. Fallback: Try to find by EMAIL (Invitation) and claim it
+        // SECURITY FIX: Only allow claiming if the user's email is strictly verified.
+        // This protects against unverified accounts claiming profiles.
+        if (!$this->candidate && $user->hasVerifiedEmail()) {
+            
             $invitation = Candidate::where('email', $user->email)
                 ->whereNull('user_id') // Only unclaimed ones
                 ->whereIn('nomination_status', ['pending_submission'])
@@ -51,34 +53,6 @@ class CandidatePortal extends Component
         if ($this->candidate) {
             $this->manifesto = $this->candidate->manifesto;
         }
-    }
-
-    public function submit()
-    {
-        $this->validate([
-            'manifesto' => 'required|min:50|max:5000',
-            'photo' => 'nullable|image|max:2048', // 2MB
-            'terms_accepted' => 'accepted',
-        ]);
-
-        if (!$this->candidate) {
-            return;
-        }
-
-        $data = [
-            'manifesto' => $this->manifesto,
-            'nomination_status' => 'pending_vetting',
-        ];
-
-        if ($this->photo) {
-            $path = $this->photo->store('candidates/photos', 'public');
-            $data['photo_path'] = $path;
-        }
-
-        $this->candidate->update($data);
-
-        session()->flash('message', 'Nomination submitted successfully! Use the "Refresh" button to check your status.');
-        $this->redirect(request()->header('Referer'));
     }
 
     public function render()

@@ -4,18 +4,13 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Models\OrganizationUser;
+use App\Models\Candidate;
 use App\Exceptions\IneligibleVoterException;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
+use Illuminate\Support\Facades\Log;
 
 class GoogleAuthService
 {
-    /**
-     * Handle the login/registration process for a Google User.
-     *
-     * @param  \Laravel\Socialite\Contracts\User  $googleUser
-     * @return \App\Models\User
-     * @throws \App\Exceptions\IneligibleVoterException
-     */
     public function handleLogin(SocialiteUser $googleUser): User
     {
         $organization = current_organization();
@@ -34,7 +29,7 @@ class GoogleAuthService
         // Use strict check - user MUST be on the list OR have a candidate invitation
         if (!$membership) {
             // Check for Candidate Invitation
-            $hasInvitation = \App\Models\Candidate::where('organization_id', $organization->id)
+            $hasInvitation = Candidate::where('organization_id', $organization->id)
                 ->where('email', $email)
                 ->exists();
 
@@ -43,15 +38,15 @@ class GoogleAuthService
                  $membership = OrganizationUser::create([
                      'organization_id' => $organization->id,
                      'allowed_email' => $email,
-                     'role' => 'voter', // Default to voter, they are a candidate
+                     'role' => 'voter', 
                      'status' => 'active',
-                     'voter_id' => 'CAND-' . strtoupper(\Illuminate\Support\Str::random(6)), // Temporary ID
+                     'voter_id' => 'CAND-' . strtoupper(\Illuminate\Support\Str::random(6)), 
                      'can_vote' => true,
                  ]);
                  
-                 \Illuminate\Support\Facades\Log::info('Created membership for invited candidate', ['email' => $email]);
+                 Log::info('Created membership for invited candidate', ['email' => $email]);
             } else {
-                \Illuminate\Support\Facades\Log::warning('Guest List Lookup Failed', [
+                Log::warning('Guest List Lookup Failed', [
                     'organization_id' => $organization->id,
                     'email' => $email
                 ]);
@@ -59,14 +54,15 @@ class GoogleAuthService
             }
         }
 
-        // 2. Create/Update the Global User Account
-        $user = User::where('email', $email)->first(); // Use first() to avoid overwriting password for existing users
+        
+        $user = User::where('email', $email)->first(); 
 
         if ($user) {
             $user->update([
                 'name' => $googleUser->getName(),
                 'google_id' => $googleUser->getId(),
                 'avatar' => $googleUser->getAvatar(),
+                'email_verified_at' => $user->email_verified_at ?? now(), 
             ]);
         } else {
             $user = User::create([
@@ -74,17 +70,22 @@ class GoogleAuthService
                 'name' => $googleUser->getName(),
                 'google_id' => $googleUser->getId(),
                 'avatar' => $googleUser->getAvatar(),
-                'password' => \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::random(32)), // Random password for DB constraint
+                'password' => \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::random(32)),
+                'email_verified_at' => now(), 
             ]);
         }
 
-        // 3. Link the User to the Membership (if not already linked)
         if (!$membership->user_id) {
             $membership->update([
                 'user_id' => $user->id,
                 'status' => 'active'
             ]);
         }
+
+        Candidate::where('email', $email)
+            ->where('organization_id', $organization->id)
+            ->whereNull('user_id') 
+            ->update(['user_id' => $user->id]);
 
         return $user;
     }

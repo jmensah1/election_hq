@@ -234,32 +234,32 @@ Add middleware to appropriate route groups in `bootstrap/app.php`.
 ## Phase 6: Voting System (Core)
 
 ### Task 6.1: Create VotingService
-Service class handling vote submission:
-- `castVote(Election $election, User $user, array $ballot)` - Main method
-- Wrap in database transaction
-- Insert VoteConfirmation (with user_id, timestamps)
-- Insert Vote (NO user_id, NO timestamps)
-- Dispatch confirmation email job
-- Create audit log entry
+- [x] Service class handling vote submission:
+    - `castVote(Election $election, User $user, array $ballot)` - Main method
+    - Wrap in database transaction
+    - Insert VoteConfirmation (with user_id, timestamps)
+    - Insert Vote (NO user_id, NO timestamps)
+    - [ ] Dispatch confirmation email job
+    - [ ] Create audit log entry
 
 ### Task 6.2: Create Vote Prevention Logic
-In VotingService, implement:
-- Check if user already voted for position (query vote_confirmations)
-- Rely on database UNIQUE constraint as backup
-- Handle constraint violation gracefully (AlreadyVotedException)
+- [x] In VotingService, implement:
+    - Check if user already voted for position (query vote_confirmations)
+    - Rely on database UNIQUE constraint as backup
+    - Handle constraint violation gracefully (AlreadyVotedException)
 
 ### Task 6.3: Create Eligibility Checks
-Create `CheckVoterEligibility` middleware/policy:
-- User must be in organization_user with can_vote = true
-- Election status must be 'voting'
-- Current time within voting window
-- User hasn't already voted for all positions
+- [x] Create `CheckVoterEligibility` middleware/policy:
+    - User must be in organization_user with can_vote = true
+    - Election status must be 'voting'
+    - Current time within voting window
+    - User hasn't already voted for all positions
 
 ### Task 6.4: Create VoteRequest Form Request
-Validate incoming vote submission:
-- Each position requires a candidate selection
-- Candidate must belong to that position
-- Candidate must be approved (vetting_status = 'passed')
+- [x] Validate incoming vote submission:
+    - Each position requires a candidate selection
+    - Candidate must belong to that position
+    - Candidate must be approved (vetting_status = 'passed')
 
 ### Task 6.5: Candidate Self-Service Portal
 - [x] Create `CandidatePortal` Livewire component.
@@ -269,49 +269,49 @@ Validate incoming vote submission:
 
 ---
 
-## Phase 7: Voter Portal (Frontend)
+## Phase 7: Voter Portal (Frontend) `[x]`
 
-### Task 7.1: Create Voter Layout
+### Task 7.1: Create Voter Layout `[x]`
 Blade layout for voter-facing pages:
-- Clean, mobile-responsive design
-- Organization branding (logo, colors)
-- Minimal navigation
-- Logout button
+- [x] Clean, mobile-responsive design
+- [x] Organization branding (logo, colors)
+- [x] Minimal navigation
+- [x] Logout button
 
-### Task 7.2: Create Login Page
+### Task 7.2: Create Login Page `[x]`
 Simple page with:
-- Organization name/logo
-- "Sign in with Google" button
-- Brief instructions
+- [x] Organization name/logo
+- [x] "Sign in with Google" button
+- [x] Brief instructions
 
-### Task 7.3: Create Election List Page
+### Task 7.3: Create Election List Page `[x]`
 Show available elections:
-- Elections in 'voting' status only
-- Election title, description
-- Voting window dates
-- "Vote Now" button
+- [x] Elections in 'voting' status only
+- [x] Election title, description
+- [x] Voting window dates
+- [x] "Vote Now" button
 
-### Task 7.4: Create Voting Booth Page (Livewire)
+### Task 7.4: Create Voter Voting Booth Page (Livewire) `[x]`
 Multi-step voting interface:
-- One position per step/section
-- Display candidates with photos and manifestos
-- Radio buttons for single selection
-- Progress indicator
-- "Review & Submit" final step
+- [x] One position per step/section
+- [x] Display candidates with photos and manifestos
+- [x] Radio buttons for single selection
+- [x] Progress indicator
+- [x] "Review & Submit" final step
 
-### Task 7.5: Create Vote Confirmation Page
+### Task 7.5: Create Vote Confirmation Page `[x]`
 After successful vote:
-- Success message with timestamp
-- List of positions voted for (not choices)
-- Option to view results (if published)
-- Logout button
+- [x] Success message with timestamp
+- [x] List of positions voted for (not choices)
+- [x] Option to view results (if published)
+- [x] Logout button
 
-### Task 7.6: Create Results Page
+### Task 7.6: Create Results Page `[x]`
 Public results display:
-- Available only after results_published = true
-- Show vote counts per candidate
-- Highlight winners
-- Participation statistics
+- [x] Available only after results_published = true
+- [x] Show vote counts per candidate
+- [x] Highlight winners
+- [x] Participation statistics
 
 ---
 
