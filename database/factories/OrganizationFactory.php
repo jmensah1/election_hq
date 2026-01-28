@@ -17,7 +17,7 @@ class OrganizationFactory extends Factory
      */
     public function definition(): array
     {
-        $name = $this->faker->company;
+        $name = $this->faker->name . ' Organization';
         return [
             'name' => $name,
             'slug' => Str::slug($name),
