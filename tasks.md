@@ -317,31 +317,31 @@ Public results display:
 
 ## Phase 8: Services & Jobs
 
-### Task 8.1: Create NotificationService
+### Task 8.1: Create NotificationService [x]
 Handle all notifications:
 - `sendVoteConfirmation(User, Election)` - Email after voting
 - `sendElectionReminder(Election, message)` - Bulk reminders
 - `sendResultsAnnouncement(Election)` - Results published
 
-### Task 8.2: Create SendVoteConfirmation Job
+### Task 8.2: Create SendVoteConfirmation Job [x]
 Queued job for sending vote confirmation emails:
 - Use Laravel Mail
 - Include election name, timestamp
 - Do NOT include vote choices (anonymity)
 
-### Task 8.3: Create AuditService
+### Task 8.3: Create AuditService [x]
 Centralized audit logging:
 - `log(action, entity, oldValues, newValues)` - Generic logging
 - Auto-capture user_id, IP, user_agent
 - Called from services and controllers
 
-### Task 8.4: Create ResultsService
+### Task 8.4: Create ResultsService [x]
 Calculate and format results:
 - `calculateResults(Election)` - Vote counts per candidate
 - `getParticipationStats(Election)` - Turnout numbers
 - `determineWinners(Election)` - Mark is_winner on candidates
 
-### Task 8.5: Create ElectionLifecycleService
+### Task 8.5: Create ElectionLifecycleService [x]
 Manage election state transitions:
 - Validate transitions (draft → nomination → vetting → voting → completed)
 - Auto-transition based on dates (scheduler)
@@ -353,29 +353,29 @@ Manage election state transitions:
 
 ### Task 9.1: Configure Rate Limiting
 In `RouteServiceProvider` or `bootstrap/app.php`:
-- Vote endpoint: 3/minute per IP, 5/minute per user
-- OAuth callback: 10/minute
-- Login: 5 attempts per 3 minutes (Laravel default)
+- [x] Vote endpoint: 3/minute per IP, 5/minute per user
+- [x] OAuth callback: 10/minute
+- [x] Login: 5 attempts per 3 minutes (Laravel default)
 
 ### Task 9.2: Configure Session Security
 In `config/session.php`:
-- lifetime: 15 minutes during elections
-- expire_on_close: true
-- secure: true (HTTPS only)
-- http_only: true
-- same_site: lax
+- [x] lifetime: 15 minutes during elections
+- [x] expire_on_close: true
+- [x] secure: true (HTTPS only)
+- [x] http_only: true
+- [x] same_site: lax
 
 ### Task 9.3: Create ElectionPolicy
 Authorization policy for elections:
-- `vote(User, Election)` - Can user vote in this election?
-- `viewResults(User, Election)` - Can user see results?
-- `manage(User, Election)` - Can user manage election?
+- [x] `vote(User, Election)` - Can user vote in this election?
+- [x] `viewResults(User, Election)` - Can user see results?
+- [x] `manage(User, Election)` - Can user manage election?
 
 ### Task 9.4: Input Validation
 Ensure all form requests have proper validation:
-- VoteRequest validates candidate belongs to position
-- All IDs are integers and exist in database
-- Text fields have max length limits
+- [x] VoteRequest validates candidate belongs to position
+- [x] All IDs are integers and exist in database
+- [x] Text fields have max length limits
 
 ---
 

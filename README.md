@@ -1,59 +1,93 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Elections HQ
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A robust, multi-tenant election management system designed for universities, organizations, and associations. Built with security and anonymity at its core.
 
-## About Laravel
+## 🚀 Key Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Multi-Tenancy**: Single installation supports multiple isolated organizations (Org A cannot see Org B's data).
+- **Vote Anonymity**: Revolutionary dual-table architecture that completely decouples "Who voted" from "What they voted for".
+- **Google OAuth**: Seamless login for voters using their organizational email (Workspace/Gmail).
+- **Filament Admin Panel**: Powerful backend for election officers to manage candidates, positions, and results.
+- **Livewire Voting Booth**: Interactive, single-page application feel for the voting process.
+- **Real-Time Results**: Instant vote counting and results publication.
+- **Audit Trails**: comprehensive logging of all actions for accountability.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 🛠 Tech Stack
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Framework**: [Laravel 12.x](https://laravel.com)
+- **Admin Panel**: [Filament 3.x](https://filamentphp.com)
+- **Frontend**: [Livewire 3.x](https://livewire.laravel.com) & [Tailwind CSS](https://tailwindcss.com)
+- **Database**: MySQL 8.0
+- **Cache/Queue**: Redis
+- **Testing**: PHPUnit / Pest
 
-## Learning Laravel
+## 🏗 Architecture & Security
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### Vote Anonymity
+The system uses a strictly decoupled database design to ensure vote anonymity:
+1.  **`vote_confirmations`**: Records *that* a user voted ( User ID + Timestamp + IP).
+2.  **`votes`**: Records *the vote itself* (Candidate ID only).
+**Crucially, there is NO foreign key or common ID linking these two tables.** Even a database administrator cannot trace a specific vote back to a specific user.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Security Measures
+- **Rate Limiting**: Strict limits on voting endpoints to prevent automation.
+- **Session Hardening**: 15-minute session lifetimes with aggressive expiration.
+- **RBAC**: Role-based access control (Super Admin, Admin, Election Officer, Voter).
 
-## Laravel Sponsors
+## ⚙️ Installation
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Prerequisites
+- PHP 8.2+
+- MySQL 8.0+
+- Redis
+- Node.js & NPM
 
-### Premium Partners
+### Setup Steps
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+1.  **Clone the Repository**
+    ```bash
+    git clone https://github.com/yourusername/elections-hq.git
+    cd elections-hq
+    ```
 
-## Contributing
+2.  **Install Dependencies**
+    ```bash
+    composer install
+    npm install
+    ```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+3.  **Environment Configuration**
+    ```bash
+    cp .env.example .env
+    php artisan key:generate
+    ```
+    *Update `.env` with your Database, Redis, and Google OAuth credentials.*
 
-## Code of Conduct
+4.  **Database Setup**
+    ```bash
+    php artisan migrate
+    php artisan db:seed
+    ```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+5.  **Build Frontend**
+    ```bash
+    npm run build
+    ```
 
-## Security Vulnerabilities
+6.  **Run Application**
+    ```bash
+    php artisan serve
+    php artisan queue:work
+    ```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## 🧪 Testing
 
-## License
+Run the comprehensive test suite (Unit + Feature):
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+php artisan test
+```
+
+## 📄 License
+
+This software is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).

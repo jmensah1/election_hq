@@ -46,9 +46,7 @@ class VotingController extends Controller
 
     public function results(Election $election)
     {
-        if (!$election->results_published) {
-            abort(403, 'Results have not been published yet.');
-        }
+        $this->authorize('viewResults', $election);
         
         // Eager load relationships for efficiency
         $election->load(['positions.candidates.user']);
