@@ -57,11 +57,17 @@ class CandidateResource extends Resource
                     ->required()
                     ->hidden(fn (callable $get) => !$get('election_id')),
                 
-                Forms\Components\Select::make('user_id')
-                    ->relationship('user', 'name') // We might want to customize this query to only show organization users
-                    ->searchable()
+                Forms\Components\TextInput::make('email')
+                    ->email()
                     ->required()
-                    ->label('Candidate User'),
+                    ->label('Candidate Email (Invitation)'),
+
+                Forms\Components\Select::make('user_id')
+                    ->relationship('user', 'name')
+                    ->label('Linked User Account')
+                    ->disabled() // Admin sets email, system links user on login
+                    ->dehydrated(false) // Don't wipe it out if it's disabled
+                    ->hiddenOn('create'), // Hide on create, show on edit if linked
                     
                 Forms\Components\TextInput::make('candidate_number')
                     ->maxLength(20),

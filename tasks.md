@@ -262,9 +262,9 @@ Validate incoming vote submission:
 - Candidate must be approved (vetting_status = 'passed')
 
 ### Task 6.5: Candidate Self-Service Portal
-- [ ] Create `CandidatePortal` Livewire component.
-- [ ] Implement file upload (photo) and manifesto editor.
-- [ ] Restrict access to users with linked Candidate records only.
+- [x] Create `CandidatePortal` Livewire component.
+- [x] Implement file upload (photo) and manifesto editor.
+- [x] Restrict access to users with linked Candidate records only (Email Invitation Flow).
 - [ ] Handle state transitions (pending_submission -> pending_vetting).
 
 ---

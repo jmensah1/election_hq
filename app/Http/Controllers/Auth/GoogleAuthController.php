@@ -45,17 +45,11 @@ class GoogleAuthController extends Controller
             // Use stateless() to bypass InvalidStateException in local dev/http environments
             $socialiteUser = Socialite::driver('google')->stateless()->user();
             
-            \Illuminate\Support\Facades\Log::info('Google Auth Attempt', [
-                'email' => $socialiteUser->getEmail(),
-                'name' => $socialiteUser->getName(),
-                'organization_context' => optional(current_organization())->slug
-            ]);
-
             $user = $this->authService->handleLogin($socialiteUser);
 
             Auth::login($user, true);
 
-            return redirect()->route('voter.elections.index');
+            return redirect()->intended(route('voter.elections.index'));
 
         } catch (Exception $e) {
             \Illuminate\Support\Facades\Log::error('Google Login Error', [

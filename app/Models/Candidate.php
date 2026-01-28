@@ -15,6 +15,7 @@ class Candidate extends Model
         'election_id',
         'position_id',
         'user_id',
+        'email',
         'candidate_number',
         'manifesto',
         'photo_path',

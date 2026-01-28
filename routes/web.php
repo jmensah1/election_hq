@@ -1,18 +1,24 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\GoogleAuthController;
 
-
-
+// 1. Remove ->name('login') from the root route
 Route::get('/', function () {
     return view('welcome');
-})->name('login'); // Name welcome as login for redirect fallback
+}); 
+
+// 2. Create a dedicated login route that triggers the Google Redirect
+Route::get('/login', [GoogleAuthController::class, 'redirect'])->name('login');
 
 // Authentication Routes
-Route::get('/auth/google', [\App\Http\Controllers\Auth\GoogleAuthController::class, 'redirect'])->name('auth.google');
-Route::get('/auth/google/callback', [\App\Http\Controllers\Auth\GoogleAuthController::class, 'callback'])->name('auth.google.callback');
-Route::post('/logout', [\App\Http\Controllers\Auth\GoogleAuthController::class, 'logout'])->name('logout');
+Route::get('/auth/google', [GoogleAuthController::class, 'redirect'])->name('auth.google');
+Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->name('auth.google.callback');
+Route::post('/logout', [GoogleAuthController::class, 'logout'])->name('logout');
 
+
+// Candidate Portal
+Route::middleware(['auth', 'web'])->get('/candidate-portal', App\Livewire\CandidatePortal::class)->name('candidate.portal');
 
 // Voter Dashboard
 Route::middleware(['auth'])->prefix('vote')->name('voter.')->group(function () {
@@ -20,22 +26,3 @@ Route::middleware(['auth'])->prefix('vote')->name('voter.')->group(function () {
         return view('voter.dashboard');
     })->name('elections.index');
 });
-
-// Route::get('/debug-tenancy', function () {
-//     return view('debug-tenancy');
-// });
-
-// Helper to create a test org easily (Verification only)
-// Route::get('/create-test-org', function () {
-//     $org = \App\Models\Organization::firstOrCreate(
-//         ['subdomain' => 'test'],
-//         [
-//             'name' => 'Test Organization',
-//             'slug' => 'test-organization',
-//             'timezone' => 'America/Chicago', // Different from UTC to prove change
-//             'status' => 'active'
-//         ]
-//     );
-//    
-//     return redirect()->to('http://test.elections-hq.me/debug-tenancy');
-// });
