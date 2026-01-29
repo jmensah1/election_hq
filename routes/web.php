@@ -6,7 +6,9 @@ use App\Http\Controllers\Auth\GoogleAuthController;
 // 1. Remove ->name('login') from the root route
 Route::get('/', function () {
     return view('welcome');
-}); 
+});
+
+ 
 
 // 2. Create a dedicated login route that triggers the Google Redirect
 Route::get('/login', [GoogleAuthController::class, 'redirect'])->name('login');

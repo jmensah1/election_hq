@@ -16,7 +16,11 @@ class AuditLogResource extends Resource
     {
         $query = parent::getEloquentQuery();
 
-        if (!auth()->user()->is_super_admin && function_exists('current_organization_id') && current_organization_id()) {
+        if (auth()->user()->is_super_admin) {
+            return parent::getEloquentQuery()->withoutGlobalScopes();
+        }
+
+        if (function_exists('current_organization_id') && current_organization_id()) {
             $query->where('organization_id', current_organization_id());
         }
 
@@ -30,6 +34,11 @@ class AuditLogResource extends Resource
     protected static ?string $navigationGroup = 'System';
     
     // Read-only resource
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()->is_super_admin;
+    }
+
     public static function canCreate(): bool
     {
         return false;
