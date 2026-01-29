@@ -16,6 +16,11 @@ Route::get('/auth/google', [GoogleAuthController::class, 'redirect'])->name('aut
 Route::middleware('throttle:oauth')->get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->name('auth.google.callback');
 Route::post('/logout', [GoogleAuthController::class, 'logout'])->name('logout');
 
+if (app()->isLocal()) {
+    Route::get('/dev/login', [App\Http\Controllers\Auth\DevAuthController::class, 'show'])->name('dev.login');
+    Route::post('/dev/login', [App\Http\Controllers\Auth\DevAuthController::class, 'login']);
+}
+
 
 // Candidate Portal
 Route::middleware(['auth', 'web'])->get('/candidate-portal', App\Livewire\CandidatePortal::class)->name('candidate.portal');

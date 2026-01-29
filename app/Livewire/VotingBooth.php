@@ -31,8 +31,9 @@ class VotingBooth extends Component
             
         // Initialize ballot with nulls or existing selections if any
         foreach ($this->positions as $position) {
-            if (!isset($this->ballot[$position->id])) {
-                $this->ballot[$position->id] = null;
+            $key = 'pos_' . $position->id;
+            if (!isset($this->ballot[$key])) {
+                $this->ballot[$key] = null;
             }
         }
     }
@@ -48,16 +49,16 @@ class VotingBooth extends Component
         $currentPosition = $this->positions[$this->currentStep];
         
         $this->validate([
-            "ballot.{$currentPosition->id}" => 'required|exists:candidates,id',
+            "ballot.pos_{$currentPosition->id}" => 'required|exists:candidates,id',
         ], [
-            "ballot.{$currentPosition->id}.required" => 'Please select a candidate before proceeding.',
+            "ballot.pos_{$currentPosition->id}.required" => 'Please select a candidate before proceeding.',
         ]);
 
         // Verify candidate belongs to position (extra safety)
-        $candidateId = $this->ballot[$currentPosition->id];
+        $candidateId = $this->ballot['pos_' . $currentPosition->id];
         $candidate = Candidate::find($candidateId);
         if ($candidate->position_id !== $currentPosition->id) {
-            $this->addError("ballot.{$currentPosition->id}", "Invalid candidate selected.");
+            $this->addError("ballot.pos_{$currentPosition->id}", "Invalid candidate selected.");
             return;
         }
 
@@ -96,8 +97,18 @@ class VotingBooth extends Component
             'ballot.*' => 'required|integer|exists:candidates,id',
         ]);
 
+        // Strip prefixes for service
+        $cleanBallot = [];
+        foreach ($this->ballot as $key => $value) {
+            if (str_starts_with($key, 'pos_')) {
+                $cleanBallot[substr($key, 4)] = $value;
+            } else {
+                $cleanBallot[$key] = $value;
+            }
+        }
+
         try {
-            $votingService->castVote($this->election, auth()->user(), $this->ballot);
+            $votingService->castVote($this->election, auth()->user(), $cleanBallot);
             return redirect()->route('voter.confirmation');
         } catch (\Exception $e) {
             session()->flash('error', 'Error submitting vote: ' . $e->getMessage());

@@ -30,7 +30,7 @@
                 <div class="space-y-6">
                     @foreach($positions as $index => $position)
                         @php
-                            $candidateId = $ballot[$position->id] ?? null;
+                            $candidateId = $ballot['pos_' . $position->id] ?? null;
                             $candidate = $position->candidates->where('id', $candidateId)->first();
                         @endphp
                         <div class="bg-gray-50 rounded-lg p-4 flex justify-between items-center border border-gray-200">
@@ -84,7 +84,7 @@
                     </div>
                 </div>
 
-                @error("ballot.{$currentPosition->id}")
+                @error("ballot.pos_{$currentPosition->id}")
                     <div class="mb-6 p-4 bg-red-50 text-red-700 rounded-lg border border-red-200 animate-pulse">
                         {{ $message }}
                     </div>
@@ -92,11 +92,15 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     @foreach($currentPosition->candidates as $candidate)
-                        <label class="cursor-pointer group relative">
+                        {{-- FIX 1: Add wire:key to the root element inside the loop --}}
+                        <label wire:key="candidate-{{ $candidate->id }}" class="cursor-pointer group relative">
+                            
+                            {{-- FIX 2: Add unique name attribute per position --}}
                             <input type="radio" 
-                                   wire:model.live="ballot.{{ $currentPosition->id }}" 
-                                   value="{{ $candidate->id }}" 
-                                   class="peer sr-only">
+                                name="position_{{ $currentPosition->id }}" 
+                                wire:model.live="ballot.pos_{{ $currentPosition->id }}" 
+                                value="{{ $candidate->id }}" 
+                                class="peer sr-only">
                             
                             <div class="h-full bg-white rounded-xl border-2 p-6 transition-all duration-200 
                                         peer-checked:border-indigo-600 peer-checked:bg-indigo-50 peer-checked:shadow-lg
