@@ -13,7 +13,8 @@ return new class extends Migration
             $table->foreignId('organization_id')->constrained()->cascadeOnDelete();
             $table->foreignId('election_id')->constrained()->cascadeOnDelete();
             $table->foreignId('position_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->string('email')->nullable(); // For candidate invitations before user claims account
             
             // Candidate info
             $table->string('candidate_number', 20)->nullable();
@@ -21,7 +22,7 @@ return new class extends Migration
             $table->string('photo_path')->nullable();
             
             // Nomination
-            $table->enum('nomination_status', ['pending', 'approved', 'rejected', 'withdrawn'])->default('pending');
+            $table->enum('nomination_status', ['pending', 'approved', 'rejected', 'withdrawn', 'pending_submission', 'pending_vetting'])->default('pending_submission');
             $table->timestamp('nominated_at')->useCurrent();
             $table->foreignId('nominated_by')->nullable()->constrained('users')->nullOnDelete();
             

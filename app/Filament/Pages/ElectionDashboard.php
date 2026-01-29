@@ -248,7 +248,7 @@ class ElectionDashboard extends Page implements HasForms
         
         $activity = VoteConfirmation::where('election_id', $this->election->id)
             ->where('voted_at', '>=', $startTime)
-            ->selectRaw('DATE_FORMAT(voted_at, "%Y-%m-%d %H:00:00") as hour, COUNT(*) as count')
+            ->selectRaw('TO_CHAR(voted_at, \'YYYY-MM-DD HH24:00:00\') as hour, COUNT(*) as count')
             ->groupBy('hour')
             ->orderBy('hour')
             ->pluck('count', 'hour')

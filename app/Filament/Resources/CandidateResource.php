@@ -78,7 +78,8 @@ class CandidateResource extends Resource
                 Forms\Components\FileUpload::make('photo_path')
                     ->image()
                     ->disk('public')
-                    ->directory('candidates/photos'),
+                    ->directory('candidates/photos')
+                    ->visibility('public'),
                 
                 Forms\Components\Select::make('nomination_status')
                     ->options([

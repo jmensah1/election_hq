@@ -50,7 +50,9 @@ class OrganizationResource extends Resource
                     ->unique(ignoreRecord: true),
                 Forms\Components\FileUpload::make('logo_path')
                     ->image()
-                    ->directory('organizations/logos'),
+                    ->disk('public')
+                    ->directory('organizations/logos')
+                    ->visibility('public'),
                 Forms\Components\Select::make('timezone')
                     ->options(array_combine(\DateTimeZone::listIdentifiers(), \DateTimeZone::listIdentifiers()))
                     ->searchable()

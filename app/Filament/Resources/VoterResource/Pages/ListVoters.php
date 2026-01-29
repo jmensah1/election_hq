@@ -26,7 +26,15 @@ class ListVoters extends ListRecords
                 ->form([
                     FileUpload::make('csv_file')
                         ->label('Upload CSV (Columns: voter_id, email, [role], [department])')
-                        ->acceptedFileTypes(['text/csv', 'application/csv', 'application/vnd.ms-excel', 'text/plain'])
+                        ->disk('public')
+                        ->directory('imports')
+                        ->acceptedFileTypes([
+                            'text/csv',
+                            'text/plain',
+                            'application/csv',
+                            'application/vnd.ms-excel',
+                            '.csv',
+                        ])
                         ->required(),
                 ])
                 ->action(function (array $data) {
