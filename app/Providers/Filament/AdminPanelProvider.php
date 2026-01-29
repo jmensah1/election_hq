@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Models\Organization;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -30,6 +31,10 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
+            ->brandName(fn () => $this->getBrandName())
+            ->brandLogo(fn () => $this->getBrandLogo())
+            ->darkModeBrandLogo(fn () => $this->getBrandLogo())
+            ->brandLogoHeight('3rem')
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
@@ -56,5 +61,51 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ]);
+    }
+
+    protected function getOrganizationFromRequest(): ?Organization
+    {
+        // Try to get from app container first (set by middleware)
+        if (function_exists('current_organization') && current_organization()) {
+            return current_organization();
+        }
+
+        // Fallback: resolve from subdomain directly
+        $host = request()->getHost();
+        $baseDomain = config('app.base_domain', 'elections-hq.me');
+        
+        // Check if we're on a subdomain
+        if (str_ends_with($host, '.' . $baseDomain)) {
+            $subdomain = str_replace('.' . $baseDomain, '', $host);
+            
+            if ($subdomain && $subdomain !== 'www') {
+                return Organization::where('subdomain', $subdomain)->first();
+            }
+        }
+
+        return null;
+    }
+
+    protected function getBrandName(): string
+    {
+        $org = $this->getOrganizationFromRequest();
+        
+        if ($org) {
+            return $org->name;
+        }
+        
+        return 'Elections HQ';
+    }
+
+    protected function getBrandLogo(): ?string
+    {
+        $org = $this->getOrganizationFromRequest();
+        
+        if ($org && $org->logo_path) {
+            return asset('storage/' . $org->logo_path);
+        }
+        
+        // Return null to use brandName text instead
+        return null;
     }
 }

@@ -1,9 +1,25 @@
 <!DOCTYPE html>
+@php
+    // Get organization from subdomain
+    $organization = null;
+    $host = request()->getHost();
+    $baseDomain = config('app.base_domain', 'elections-hq.me');
+    
+    if (str_ends_with($host, '.' . $baseDomain)) {
+        $subdomain = str_replace('.' . $baseDomain, '', $host);
+        if ($subdomain && $subdomain !== 'www') {
+            $organization = \App\Models\Organization::where('subdomain', $subdomain)->first();
+        }
+    }
+    
+    $brandName = $organization?->name ?? 'Elections HQ';
+    $logoUrl = $organization?->logo_path ? asset('storage/' . $organization->logo_path) : null;
+@endphp
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ config('app.name', 'Elections HQ') }} - Secure, Anonymous, Verified</title>
+    <title>{{ $brandName }} - Secure, Anonymous, Verified</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -50,12 +66,22 @@
             <div class="flex justify-between items-center h-20">
                 <!-- Logo -->
                 <div class="flex-shrink-0 flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/20">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                    </div>
-                    <span class="font-bold text-xl tracking-tight text-white">Elections<span class="text-amber-500">HQ</span></span>
+                    @if($logoUrl)
+                        <img src="{{ $logoUrl }}" alt="{{ $brandName }}" class="h-10 w-auto object-contain">
+                    @else
+                        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/20">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    @endif
+                    <span class="font-bold text-xl tracking-tight text-white">
+                        @if($organization)
+                            {{ $brandName }}
+                        @else
+                            Elections<span class="text-amber-500">HQ</span>
+                        @endif
+                    </span>
                 </div>
 
                 <!-- Auth Links -->
@@ -89,20 +115,37 @@
         </div>
 
         <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/50 border border-slate-700/50 text-amber-400 text-xs font-semibold tracking-wide uppercase mb-8 backdrop-blur-sm animate-fade-in-up">
-                <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-                The Standard for Modern Democracy
-            </div>
-            
-            <h1 class="text-5xl md:text-7xl font-bold tracking-tight text-white mb-6 leading-tight">
-                Secure. Anonymous. <br/>
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-600">Verifiable.</span>
-            </h1>
-            
-            <p class="mt-4 max-w-2xl mx-auto text-xl text-slate-400 leading-relaxed mb-10">
-                Elections HQ provides an audit-grade electronic voting platform designed for integrity. 
-                Decoupled architecture ensures complete voter anonymity while maintaining mathematical proof of inclusion.
-            </p>
+            @if($organization)
+                <!-- Vendor-specific welcome -->
+                @if($logoUrl)
+                    <img src="{{ $logoUrl }}" alt="{{ $brandName }}" class="h-24 w-auto mx-auto mb-8 object-contain">
+                @endif
+                <h1 class="text-5xl md:text-7xl font-bold tracking-tight text-white mb-6 leading-tight">
+                    Welcome to <br/>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-600">{{ $brandName }}</span>
+                    <br><span class="text-3xl md:text-4xl font-medium text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-amber-500">Election Portal</span>
+                </h1>
+                
+                <p class="mt-4 max-w-2xl mx-auto text-xl text-slate-400 leading-relaxed mb-10">
+                    Access your elections portal securely. Vote with confidence knowing your ballot is anonymous, verified, and counted.
+                </p>
+            @else
+                <!-- Platform landing page -->
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/50 border border-slate-700/50 text-amber-400 text-xs font-semibold tracking-wide uppercase mb-8 backdrop-blur-sm animate-fade-in-up">
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                    The Standard for Modern Democracy
+                </div>
+                
+                <h1 class="text-5xl md:text-7xl font-bold tracking-tight text-white mb-6 leading-tight">
+                    Secure. Anonymous. <br/>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-600">Verifiable.</span>
+                </h1>
+                
+                <p class="mt-4 max-w-2xl mx-auto text-xl text-slate-400 leading-relaxed mb-10">
+                    Elections HQ provides an audit-grade electronic voting platform designed for integrity. 
+                    Decoupled architecture ensures complete voter anonymity while maintaining mathematical proof of inclusion.
+                </p>
+            @endif
 
             <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
                 @auth
@@ -114,91 +157,101 @@
                         Access Voter Portal
                     </a>
                 @endauth
-                <a href="#features" class="px-8 py-4 bg-slate-800/50 hover:bg-slate-800 text-white font-semibold rounded-lg border border-slate-700 backdrop-blur-sm transition-all hover:border-slate-500">
-                    Learn How it Works
-                </a>
+                @unless($organization)
+                    <a href="#features" class="px-8 py-4 bg-slate-800/50 hover:bg-slate-800 text-white font-semibold rounded-lg border border-slate-700 backdrop-blur-sm transition-all hover:border-slate-500">
+                        Learn How it Works
+                    </a>
+                @endunless
             </div>
 
-            <!-- Stats/Social Proof -->
-            <div class="mt-16 pt-8 border-t border-white/5 grid grid-cols-2 md:grid-cols-4 gap-8">
-                <div>
-                    <div class="text-3xl font-bold text-white">100%</div>
-                    <div class="text-sm text-slate-500 mt-1 uppercase tracking-wider">Anonymity</div>
+            @unless($organization)
+                <!-- Stats/Social Proof - Only on main landing page -->
+                <div class="mt-16 pt-8 border-t border-white/5 grid grid-cols-2 md:grid-cols-4 gap-8">
+                    <div>
+                        <div class="text-3xl font-bold text-white">100%</div>
+                        <div class="text-sm text-slate-500 mt-1 uppercase tracking-wider">Anonymity</div>
+                    </div>
+                    <div>
+                        <div class="text-3xl font-bold text-white">Zero</div>
+                        <div class="text-sm text-slate-500 mt-1 uppercase tracking-wider">Correlation</div>
+                    </div>
+                    <div>
+                        <div class="text-3xl font-bold text-white">24/7</div>
+                        <div class="text-sm text-slate-500 mt-1 uppercase tracking-wider">Availability</div>
+                    </div>
+                    <div>
+                        <div class="text-3xl font-bold text-white">Audit</div>
+                        <div class="text-sm text-slate-500 mt-1 uppercase tracking-wider">Ready Logs</div>
+                    </div>
                 </div>
-                <div>
-                    <div class="text-3xl font-bold text-white">Zero</div>
-                    <div class="text-sm text-slate-500 mt-1 uppercase tracking-wider">Correlation</div>
-                </div>
-                <div>
-                    <div class="text-3xl font-bold text-white">24/7</div>
-                    <div class="text-sm text-slate-500 mt-1 uppercase tracking-wider">Availability</div>
-                </div>
-                <div>
-                    <div class="text-3xl font-bold text-white">Audit</div>
-                    <div class="text-sm text-slate-500 mt-1 uppercase tracking-wider">Ready Logs</div>
-                </div>
-            </div>
+            @endunless
         </div>
     </div>
 
-    <!-- Features Section -->
-    <div id="features" class="py-24 bg-slate-900 relative">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Enterprise-Grade Integrity</h2>
-                <p class="text-slate-400 max-w-2xl mx-auto">
-                    Built to solve the paradox of electronic voting: proving a vote was counted without revealing who cast it.
-                </p>
-            </div>
-
-            <div class="grid md:grid-cols-3 gap-8">
-                <!-- Feature 1 -->
-                <div class="p-8 rounded-2xl bg-slate-950 border border-slate-800 hover:border-amber-500/30 transition-all hover:bg-slate-900/80 group">
-                    <div class="w-12 h-12 bg-slate-900 rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform ring-1 ring-slate-800 group-hover:ring-amber-500/50">
-                        <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                    </div>
-                    <h3 class="text-xl font-bold text-white mb-3">Decoupled Architecture</h3>
-                    <p class="text-slate-400 leading-relaxed">
-                        We separate <strong>WHO</strong> voted from <strong>WHAT</strong> they voted for into two completely isolated database tables. There is zero mathematical link between your identity and your ballot choice.
+    @unless($organization)
+        <!-- Features Section - Only on main landing page -->
+        <div id="features" class="py-24 bg-slate-900 relative">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Enterprise-Grade Integrity</h2>
+                    <p class="text-slate-400 max-w-2xl mx-auto">
+                        Built to solve the paradox of electronic voting: proving a vote was counted without revealing who cast it.
                     </p>
                 </div>
 
-                <!-- Feature 2 -->
-                <div class="p-8 rounded-2xl bg-slate-950 border border-slate-800 hover:border-blue-500/30 transition-all hover:bg-slate-900/80 group">
-                    <div class="w-12 h-12 bg-slate-900 rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform ring-1 ring-slate-800 group-hover:ring-blue-500/50">
-                        <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <!-- Feature 1 -->
+                    <div class="p-8 rounded-2xl bg-slate-950 border border-slate-800 hover:border-amber-500/30 transition-all hover:bg-slate-900/80 group">
+                        <div class="w-12 h-12 bg-slate-900 rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform ring-1 ring-slate-800 group-hover:ring-amber-500/50">
+                            <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-3">Decoupled Architecture</h3>
+                        <p class="text-slate-400 leading-relaxed">
+                            We separate <strong>WHO</strong> voted from <strong>WHAT</strong> they voted for into two completely isolated database tables. There is zero mathematical link between your identity and your ballot choice.
+                        </p>
                     </div>
-                    <h3 class="text-xl font-bold text-white mb-3">Immutable Audit Logs</h3>
-                    <p class="text-slate-400 leading-relaxed">
-                        Every system action is recorded in a tamper-evident audit trail. Admins can verify election integrity without ever compromising voter secrecy.
-                    </p>
-                </div>
 
-                <!-- Feature 3 -->
-                <div class="p-8 rounded-2xl bg-slate-950 border border-slate-800 hover:border-green-500/30 transition-all hover:bg-slate-900/80 group">
-                    <div class="w-12 h-12 bg-slate-900 rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform ring-1 ring-slate-800 group-hover:ring-green-500/50">
-                        <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                    <!-- Feature 2 -->
+                    <div class="p-8 rounded-2xl bg-slate-950 border border-slate-800 hover:border-blue-500/30 transition-all hover:bg-slate-900/80 group">
+                        <div class="w-12 h-12 bg-slate-900 rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform ring-1 ring-slate-800 group-hover:ring-blue-500/50">
+                            <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-3">Immutable Audit Logs</h3>
+                        <p class="text-slate-400 leading-relaxed">
+                            Every system action is recorded in a tamper-evident audit trail. Admins can verify election integrity without ever compromising voter secrecy.
+                        </p>
                     </div>
-                    <h3 class="text-xl font-bold text-white mb-3">Multi-Tenant Ready</h3>
-                    <p class="text-slate-400 leading-relaxed">
-                        One platform, infinite organizations. Securely isolated environments for universities, unions, and corporate boards with custom domains and branding.
-                    </p>
+
+                    <!-- Feature 3 -->
+                    <div class="p-8 rounded-2xl bg-slate-950 border border-slate-800 hover:border-green-500/30 transition-all hover:bg-slate-900/80 group">
+                        <div class="w-12 h-12 bg-slate-900 rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform ring-1 ring-slate-800 group-hover:ring-green-500/50">
+                            <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-3">Multi-Tenant Ready</h3>
+                        <p class="text-slate-400 leading-relaxed">
+                            One platform, infinite organizations. Securely isolated environments for universities, unions, and corporate boards with custom domains and branding.
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    @endunless
 
     <!-- Footer -->
     <footer class="bg-slate-950 border-t border-slate-900 py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center">
             <div class="flex items-center gap-2 mb-4 md:mb-0">
-                <div class="w-6 h-6 rounded bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center">
-                    <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                </div>
-                <span class="text-slate-300 font-semibold">Elections HQ</span>
+                @if($logoUrl)
+                    <img src="{{ $logoUrl }}" alt="{{ $brandName }}" class="h-6 w-auto object-contain">
+                @else
+                    <div class="w-6 h-6 rounded bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center">
+                        <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                @endif
+                <span class="text-slate-300 font-semibold">{{ $brandName }}</span>
             </div>
             <div class="text-slate-500 text-sm">
-                &copy; {{ date('Y') }} Elections HQ. All rights reserved.
+                &copy; {{ date('Y') }} {{ $brandName }}. All rights reserved.
             </div>
         </div>
     </footer>

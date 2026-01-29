@@ -172,7 +172,6 @@ class UploadDebugPage extends Page
 
     public static function canAccess(): bool
     {
-        // Allow any authenticated user who can access the admin panel
-        return auth()->check();
+        return auth()->user()?->is_super_admin ?? false;
     }
 }

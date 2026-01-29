@@ -56,13 +56,13 @@ class ElectionResource extends Resource
                 
                 Forms\Components\Grid::make(3)
                     ->schema([
-                         Forms\Components\DatePicker::make('nomination_start_date')->required(),
-                         Forms\Components\DatePicker::make('vetting_start_date')->required(),
-                         Forms\Components\DatePicker::make('voting_start_date')->required(),
+                         Forms\Components\DateTimePicker::make('nomination_start_date')->required()->seconds(false),
+                         Forms\Components\DateTimePicker::make('vetting_start_date')->required()->seconds(false),
+                         Forms\Components\DateTimePicker::make('voting_start_date')->required()->seconds(false),
                          
-                         Forms\Components\DatePicker::make('nomination_end_date')->required(),
-                         Forms\Components\DatePicker::make('vetting_end_date')->required(),
-                         Forms\Components\DatePicker::make('voting_end_date')->required(),
+                         Forms\Components\DateTimePicker::make('nomination_end_date')->required()->seconds(false),
+                         Forms\Components\DateTimePicker::make('vetting_end_date')->required()->seconds(false),
+                         Forms\Components\DateTimePicker::make('voting_end_date')->required()->seconds(false),
                     ]),
                 
                 Forms\Components\Select::make('status')
@@ -113,6 +113,11 @@ class ElectionResource extends Resource
                 Tables\Filters\SelectFilter::make('status'),
             ])
             ->actions([
+                Tables\Actions\Action::make('dashboard')
+                    ->label('Dashboard')
+                    ->icon('heroicon-o-chart-bar-square')
+                    ->url(fn (Election $record) => route('filament.admin.pages.election-dashboard', ['selectedElectionId' => $record->id]))
+                    ->color('info'),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
