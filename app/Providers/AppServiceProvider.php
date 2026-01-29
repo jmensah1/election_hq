@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,8 +22,9 @@ class AppServiceProvider extends ServiceProvider
     {
         \Illuminate\Support\Facades\Blade::component('layouts.voter', 'voter-layout');
 
-        // Listeners for Login/Logout are auto-discovered by Laravel 11+
-        // Manual registration caused duplicate logs.
+        if ($this->app->environment('production') || config('app.env') === 'production') {
+        URL::forceScheme('https');
+        }
 
         \Illuminate\Support\Facades\RateLimiter::for('vote', function (\Illuminate\Http\Request $request) {
             return \Illuminate\Cache\RateLimiting\Limit::perMinute(5)->by($request->user()?->id ?: $request->ip());
