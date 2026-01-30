@@ -22,7 +22,7 @@ class ElectionDashboard extends Page implements HasForms
     protected static ?string $navigationIcon = 'heroicon-o-chart-bar-square';
     protected static ?string $navigationLabel = 'Election Dashboard';
     protected static ?string $navigationGroup = 'Election Management';
-    protected static ?int $navigationSort = 0;
+    protected static ?int $navigationSort = 5;
     protected static string $view = 'filament.pages.election-dashboard';
 
     public ?int $selectedElectionId = null;

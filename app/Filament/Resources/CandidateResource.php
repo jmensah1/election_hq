@@ -26,9 +26,13 @@ class CandidateResource extends Resource
 
     protected static ?string $model = Candidate::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-user-group';
+    protected static ?string $navigationIcon = 'heroicon-o-user-plus';
+
+    protected static ?string $navigationLabel = 'Nominations';
 
     protected static ?string $navigationGroup = 'Election Management';
+
+    protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
     {
@@ -91,19 +95,6 @@ class CandidateResource extends Resource
                     ])
                     ->default('pending_submission')
                     ->required(),
-                
-                Forms\Components\Select::make('vetting_status')
-                    ->options([
-                        'pending' => 'Pending',
-                        'passed' => 'Passed',
-                        'failed' => 'Failed',
-                        'disqualified' => 'Disqualified',
-                    ])
-                    ->default('pending')
-                    ->required(),
-                
-                Forms\Components\Textarea::make('vetting_notes')
-                    ->columnSpanFull(),
             ]);
     }
 
@@ -126,17 +117,6 @@ class CandidateResource extends Resource
                         'withdrawn' => 'warning',
                         'pending' => 'gray', // Fallback for old records
                     }),
-                    
-                Tables\Columns\TextColumn::make('vetting_status')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'pending' => 'gray',
-                        'passed' => 'success',
-                        'failed' => 'danger',
-                        'disqualified' => 'danger',
-                    }),
-                    
-                Tables\Columns\TextColumn::make('vote_count')->numeric()->sortable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('election_id')

@@ -23,6 +23,7 @@ class Candidate extends Model
         'nominated_at',
         'nominated_by',
         'vetting_status',
+        'vetting_score',
         'vetting_notes',
         'vetted_at',
         'vetted_by',
