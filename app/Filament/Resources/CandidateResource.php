@@ -152,6 +152,51 @@ class CandidateResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])
+            ->headerActions([
+                Tables\Actions\Action::make('export')
+                    ->label('Export CSV')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->action(function () {
+                        $query = static::getEloquentQuery()
+                            ->with(['user', 'election', 'position']);
+                        
+                        $filename = 'candidates-' . now()->format('Y-m-d') . '.csv';
+                        
+                        return response()->streamDownload(function () use ($query) {
+                            $handle = fopen('php://output', 'w');
+                            
+                            // Header row
+                            fputcsv($handle, [
+                                'ID', 'Name', 'Email', 'Election', 'Position', 
+                                'Candidate Number', 'Nomination Status', 'Vetting Status', 
+                                'Vote Count', 'Is Winner', 'Created At'
+                            ]);
+                            
+                            // Data rows
+                            $query->chunk(100, function ($candidates) use ($handle) {
+                                foreach ($candidates as $candidate) {
+                                    fputcsv($handle, [
+                                        $candidate->id,
+                                        $candidate->user?->name ?? 'N/A',
+                                        $candidate->email,
+                                        $candidate->election?->title ?? 'N/A',
+                                        $candidate->position?->name ?? 'N/A',
+                                        $candidate->candidate_number,
+                                        $candidate->nomination_status,
+                                        $candidate->vetting_status,
+                                        $candidate->vote_count,
+                                        $candidate->is_winner ? 'Yes' : 'No',
+                                        $candidate->created_at?->format('Y-m-d H:i:s'),
+                                    ]);
+                                }
+                            });
+                            
+                            fclose($handle);
+                        }, $filename, [
+                            'Content-Type' => 'text/csv',
+                        ]);
+                    }),
+            ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),

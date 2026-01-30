@@ -117,6 +117,46 @@ class VoterResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])
+            ->headerActions([
+                Tables\Actions\Action::make('export')
+                    ->label('Export CSV')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->action(function () {
+                        $query = static::getEloquentQuery()
+                            ->with(['user', 'organization']);
+                        
+                        $filename = 'voters-' . now()->format('Y-m-d') . '.csv';
+                        
+                        return response()->streamDownload(function () use ($query) {
+                            $handle = fopen('php://output', 'w');
+                            
+                            fputcsv($handle, [
+                                'ID', 'Voter ID', 'Email', 'Role', 'Status', 
+                                'Can Vote', 'Department', 'Linked User', 'Created At'
+                            ]);
+                            
+                            $query->chunk(100, function ($voters) use ($handle) {
+                                foreach ($voters as $voter) {
+                                    fputcsv($handle, [
+                                        $voter->id,
+                                        $voter->voter_id,
+                                        $voter->allowed_email,
+                                        $voter->role,
+                                        $voter->status,
+                                        $voter->can_vote ? 'Yes' : 'No',
+                                        $voter->department,
+                                        $voter->user?->name ?? 'Not linked',
+                                        $voter->created_at?->format('Y-m-d H:i:s'),
+                                    ]);
+                                }
+                            });
+                            
+                            fclose($handle);
+                        }, $filename, [
+                            'Content-Type' => 'text/csv',
+                        ]);
+                    }),
+            ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),

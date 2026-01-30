@@ -314,4 +314,60 @@ class ElectionDashboard extends Page implements HasForms
             default => 'gray',
         };
     }
+
+    public function exportResults()
+    {
+        if (!$this->election) {
+            return null;
+        }
+
+        // Only allow export if completed or results published
+        if (!$this->election->results_published && $this->election->status !== 'completed') {
+            return null;
+        }
+
+        $election = $this->election;
+        $filename = 'election-results-' . \Illuminate\Support\Str::slug($election->title) . '-' . now()->format('Y-m-d') . '.csv';
+
+        return response()->streamDownload(function () use ($election) {
+            $handle = fopen('php://output', 'w');
+            
+            // Header row
+            fputcsv($handle, [
+                'Position', 'Candidate Name', 'Candidate Email', 
+                'Vote Count', 'Percentage', 'Is Winner', 'Rank'
+            ]);
+            
+            $positions = $election->positions()
+                ->with(['candidates' => function ($query) {
+                    $query->where('vetting_status', 'passed')
+                          ->orderByDesc('vote_count');
+                }])
+                ->orderBy('display_order')
+                ->get();
+
+            foreach ($positions as $position) {
+                $totalVotes = $position->candidates->sum('vote_count');
+                $rank = 1;
+                
+                foreach ($position->candidates as $candidate) {
+                    $percentage = $totalVotes > 0 ? round(($candidate->vote_count / $totalVotes) * 100, 1) : 0;
+                    
+                    fputcsv($handle, [
+                        $position->name,
+                        $candidate->user?->name ?? 'N/A',
+                        $candidate->email,
+                        $candidate->vote_count,
+                        $percentage . '%',
+                        $candidate->is_winner ? 'Yes' : 'No',
+                        $rank++,
+                    ]);
+                }
+            }
+            
+            fclose($handle);
+        }, $filename, [
+            'Content-Type' => 'text/csv',
+        ]);
+    }
 }

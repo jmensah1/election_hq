@@ -91,6 +91,47 @@ class PositionResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])
+            ->headerActions([
+                Tables\Actions\Action::make('export')
+                    ->label('Export CSV')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->action(function () {
+                        $query = static::getEloquentQuery()
+                            ->with(['election']);
+                        
+                        $filename = 'positions-' . now()->format('Y-m-d') . '.csv';
+                        
+                        return response()->streamDownload(function () use ($query) {
+                            $handle = fopen('php://output', 'w');
+                            
+                            fputcsv($handle, [
+                                'ID', 'Election', 'Position Name', 'Description', 
+                                'Display Order', 'Max Candidates', 'Max Votes', 
+                                'Is Active', 'Created At'
+                            ]);
+                            
+                            $query->chunk(100, function ($positions) use ($handle) {
+                                foreach ($positions as $position) {
+                                    fputcsv($handle, [
+                                        $position->id,
+                                        $position->election?->title ?? 'N/A',
+                                        $position->name,
+                                        $position->description,
+                                        $position->display_order,
+                                        $position->max_candidates,
+                                        $position->max_votes,
+                                        $position->is_active ? 'Yes' : 'No',
+                                        $position->created_at?->format('Y-m-d H:i:s'),
+                                    ]);
+                                }
+                            });
+                            
+                            fclose($handle);
+                        }, $filename, [
+                            'Content-Type' => 'text/csv',
+                        ]);
+                    }),
+            ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),

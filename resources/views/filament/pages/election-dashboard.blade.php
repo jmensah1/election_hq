@@ -146,9 +146,21 @@
             {{-- Position Results --}}
             <x-filament::section>
                 <x-slot name="heading">
-                    <div class="flex items-center gap-2">
-                        <x-heroicon-o-trophy class="w-5 h-5" />
-                        Results by Position
+                    <div class="flex items-center justify-between w-full">
+                        <div class="flex items-center gap-2">
+                            <x-heroicon-o-trophy class="w-5 h-5" />
+                            Results by Position
+                        </div>
+                        @if($election->status === 'completed' || $election->results_published)
+                            <x-filament::button
+                                wire:click="exportResults"
+                                size="sm"
+                                color="gray"
+                                icon="heroicon-o-arrow-down-tray"
+                            >
+                                Export Results
+                            </x-filament::button>
+                        @endif
                     </div>
                 </x-slot>
 
