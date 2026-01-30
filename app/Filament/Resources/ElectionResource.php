@@ -120,6 +120,23 @@ class ElectionResource extends Resource
                     ->icon('heroicon-o-chart-bar-square')
                     ->url(fn (Election $record) => route('filament.admin.pages.election-dashboard', ['selectedElectionId' => $record->id]))
                     ->color('info'),
+                Tables\Actions\Action::make('publishResults')
+                    ->label('Publish Results')
+                    ->icon('heroicon-o-megaphone')
+                    ->color('success')
+                    ->visible(fn (Election $record) => $record->canPublishResults())
+                    ->requiresConfirmation()
+                    ->modalHeading('Publish Election Results')
+                    ->modalDescription('Are you sure you want to publish the results? This will make them visible to all voters.')
+                    ->modalSubmitActionLabel('Yes, Publish Results')
+                    ->action(function (Election $record) {
+                        $record->publishResults();
+                        \Filament\Notifications\Notification::make()
+                            ->title('Results Published')
+                            ->body("Results for '{$record->title}' are now visible to voters.")
+                            ->success()
+                            ->send();
+                    }),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([

@@ -24,9 +24,14 @@ class VotingService
 
     public function castVote(Election $election, User $user, array $ballot, array $yesNoVotes = []): void
     {
-        // 1. Global Checks
+        // 1. Global Checks - Status must be 'voting'
         if ($election->status !== 'voting') {
-            throw new ElectionNotOpenException("Election is not open.");
+            throw new ElectionNotOpenException("Election is not open for voting.");
+        }
+
+        // 2. Time window check - must be within voting period
+        if (!$election->isVotingOpen()) {
+            throw new ElectionNotOpenException("The voting period has ended. Votes are no longer accepted.");
         }
         
         // Ballot format: [position_id => candidate_id]

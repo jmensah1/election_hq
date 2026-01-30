@@ -18,6 +18,7 @@ return new class extends Migration
             $table->integer('max_candidates')->default(10);
             $table->integer('max_votes')->default(1);
             $table->boolean('is_active')->default(true);
+            $table->boolean('is_yes_no_vote')->default(false);
             $table->timestamps();
             
             $table->index('organization_id');

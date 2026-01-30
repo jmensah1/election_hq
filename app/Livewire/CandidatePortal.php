@@ -57,6 +57,23 @@ class CandidatePortal extends Component
 
     public function submit()
     {
+        // Check if nomination is still open
+        if (!$this->candidate || !$this->candidate->election) {
+            session()->flash('error', 'Could not find your nomination record.');
+            return;
+        }
+
+        $election = $this->candidate->election;
+        
+        if (!$election->isNominationOpen()) {
+            $message = $election->status !== 'nomination' 
+                ? 'The nomination period has not started or has ended.'
+                : 'The nomination deadline has passed. Submissions are no longer accepted.';
+            
+            session()->flash('error', $message);
+            return;
+        }
+
         $this->validate([
             'manifesto' => 'required|min:50',
             'photo' => 'nullable|image|max:2048',

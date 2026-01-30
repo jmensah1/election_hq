@@ -27,8 +27,8 @@ return new class extends Migration
             $table->string('sms_sender_id', 11)->nullable();
             $table->integer('max_voters')->default(100);
             
-            // Settings
-            $table->json('settings')->nullable();
+            // Settings (using jsonb for PostgreSQL compatibility)
+            $table->jsonb('settings')->nullable();
             
             $table->timestamps();
             

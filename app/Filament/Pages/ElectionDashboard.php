@@ -370,4 +370,27 @@ class ElectionDashboard extends Page implements HasForms
             'Content-Type' => 'text/csv',
         ]);
     }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            \Filament\Actions\Action::make('publishResults')
+                ->label('Publish Results')
+                ->icon('heroicon-o-megaphone')
+                ->color('success')
+                ->visible(fn () => $this->election?->canPublishResults())
+                ->requiresConfirmation()
+                ->modalHeading('Publish Election Results')
+                ->modalDescription('Are you sure you want to publish the results? This will make them visible to all voters and members.')
+                ->modalSubmitActionLabel('Yes, Publish Results')
+                ->action(function () {
+                    $this->election->publishResults();
+                    \Filament\Notifications\Notification::make()
+                        ->title('Results Published')
+                        ->body("Results for '{$this->election->title}' are now visible to voters.")
+                        ->success()
+                        ->send();
+                }),
+        ];
+    }
 }

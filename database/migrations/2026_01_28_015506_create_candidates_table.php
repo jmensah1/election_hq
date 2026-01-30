@@ -28,6 +28,7 @@ return new class extends Migration
             
             // Vetting
             $table->enum('vetting_status', ['pending', 'passed', 'failed', 'disqualified'])->default('pending');
+            $table->integer('vetting_score')->nullable();
             $table->text('vetting_notes')->nullable();
             $table->timestamp('vetted_at')->nullable();
             $table->foreignId('vetted_by')->nullable()->constrained('users')->nullOnDelete();

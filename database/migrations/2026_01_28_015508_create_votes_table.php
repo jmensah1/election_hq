@@ -14,6 +14,7 @@ return new class extends Migration
             $table->foreignId('election_id')->constrained()->cascadeOnDelete();
             $table->foreignId('position_id')->constrained()->cascadeOnDelete();
             $table->foreignId('candidate_id')->constrained()->cascadeOnDelete();
+            $table->boolean('is_no_vote')->default(false);
             
             // ABSOLUTELY NO user_id, NO timestamps
             

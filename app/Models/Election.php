@@ -67,4 +67,53 @@ class Election extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
+    /**
+     * Check if nomination submission is currently allowed.
+     */
+    public function isNominationOpen(): bool
+    {
+        if ($this->status !== 'nomination') {
+            return false;
+        }
+
+        $now = now();
+        return $now->gte($this->nomination_start_date) && $now->lte($this->nomination_end_date);
+    }
+
+    /**
+     * Check if voting is currently allowed.
+     */
+    public function isVotingOpen(): bool
+    {
+        if ($this->status !== 'voting') {
+            return false;
+        }
+
+        $now = now();
+        return $now->gte($this->voting_start_date) && $now->lte($this->voting_end_date);
+    }
+
+    /**
+     * Check if results can be published.
+     */
+    public function canPublishResults(): bool
+    {
+        return $this->status === 'completed' && !$this->results_published;
+    }
+
+    /**
+     * Publish the election results.
+     */
+    public function publishResults(): bool
+    {
+        if (!$this->canPublishResults()) {
+            return false;
+        }
+
+        return $this->update([
+            'results_published' => true,
+            'results_published_at' => now(),
+        ]);
+    }
 }
