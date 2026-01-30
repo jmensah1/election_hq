@@ -43,23 +43,50 @@ class VotingBooth extends Component
         $this->ballot[$positionId] = $candidateId;
     }
 
+    public function selectYesNo($positionId, $vote)
+    {
+        // $vote is either 'yes' or 'no'
+        $this->ballot[$positionId] = $vote;
+    }
+
+    public function isYesNoPosition($position): bool
+    {
+        // Position is Yes/No if explicitly marked OR has only one approved candidate
+        if ($position->is_yes_no_vote) {
+            return true;
+        }
+        
+        // Auto-detect: single candidate positions become Yes/No
+        return $position->candidates->count() === 1;
+    }
+
     public function nextStep()
     {
         // Validation for current step
         $currentPosition = $this->positions[$this->currentStep];
+        $isYesNo = $this->isYesNoPosition($currentPosition);
         
-        $this->validate([
-            "ballot.pos_{$currentPosition->id}" => 'required|exists:candidates,id',
-        ], [
-            "ballot.pos_{$currentPosition->id}.required" => 'Please select a candidate before proceeding.',
-        ]);
+        if ($isYesNo) {
+            $this->validate([
+                "ballot.pos_{$currentPosition->id}" => 'required|in:yes,no',
+            ], [
+                "ballot.pos_{$currentPosition->id}.required" => 'Please select Yes or No before proceeding.',
+                "ballot.pos_{$currentPosition->id}.in" => 'Please select Yes or No before proceeding.',
+            ]);
+        } else {
+            $this->validate([
+                "ballot.pos_{$currentPosition->id}" => 'required|exists:candidates,id',
+            ], [
+                "ballot.pos_{$currentPosition->id}.required" => 'Please select a candidate before proceeding.',
+            ]);
 
-        // Verify candidate belongs to position (extra safety)
-        $candidateId = $this->ballot['pos_' . $currentPosition->id];
-        $candidate = Candidate::find($candidateId);
-        if ($candidate->position_id !== $currentPosition->id) {
-            $this->addError("ballot.pos_{$currentPosition->id}", "Invalid candidate selected.");
-            return;
+            // Verify candidate belongs to position (extra safety)
+            $candidateId = $this->ballot['pos_' . $currentPosition->id];
+            $candidate = Candidate::find($candidateId);
+            if ($candidate->position_id !== $currentPosition->id) {
+                $this->addError("ballot.pos_{$currentPosition->id}", "Invalid candidate selected.");
+                return;
+            }
         }
 
         if ($this->currentStep < count($this->positions) - 1) {
@@ -91,24 +118,33 @@ class VotingBooth extends Component
 
     public function submitVote(VotingService $votingService)
     {
-        // Final validation
-        $this->validate([
-            'ballot' => 'required|array',
-            'ballot.*' => 'required|integer|exists:candidates,id',
-        ]);
-
-        // Strip prefixes for service
+        // Build clean ballot separating candidate votes from yes/no votes
         $cleanBallot = [];
-        foreach ($this->ballot as $key => $value) {
-            if (str_starts_with($key, 'pos_')) {
-                $cleanBallot[substr($key, 4)] = $value;
+        $yesNoVotes = [];
+        
+        foreach ($this->positions as $position) {
+            $key = 'pos_' . $position->id;
+            $value = $this->ballot[$key] ?? null;
+            
+            if ($value === null) {
+                $this->addError($key, 'Please make a selection for all positions.');
+                return;
+            }
+            
+            if ($this->isYesNoPosition($position)) {
+                // Yes/No vote
+                $yesNoVotes[$position->id] = [
+                    'vote' => $value, // 'yes' or 'no'
+                    'candidate_id' => $position->candidates->first()?->id,
+                ];
             } else {
-                $cleanBallot[$key] = $value;
+                // Regular candidate vote
+                $cleanBallot[$position->id] = $value;
             }
         }
 
         try {
-            $votingService->castVote($this->election, auth()->user(), $cleanBallot);
+            $votingService->castVote($this->election, auth()->user(), $cleanBallot, $yesNoVotes);
             return redirect()->route('voter.confirmation');
         } catch (\Exception $e) {
             session()->flash('error', 'Error submitting vote: ' . $e->getMessage());

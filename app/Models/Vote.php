@@ -18,6 +18,7 @@ class Vote extends Model
         'election_id',
         'position_id',
         'candidate_id',
+        'is_no_vote',
     ];
 
     public function election()

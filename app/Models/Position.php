@@ -19,10 +19,12 @@ class Position extends Model
         'max_candidates',
         'max_votes',
         'is_active',
+        'is_yes_no_vote',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'is_yes_no_vote' => 'boolean',
     ];
 
     public function election()

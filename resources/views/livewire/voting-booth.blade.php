@@ -35,14 +35,27 @@
                 <div class="grid gap-4">
                     @foreach($positions as $index => $position)
                         @php
-                            $candidateId = $ballot['pos_' . $position->id] ?? null;
-                            $candidate = $position->candidates->where('id', $candidateId)->first();
+                            $voteValue = $ballot['pos_' . $position->id] ?? null;
+                            $isYesNo = $this->isYesNoPosition($position);
+                            $candidate = !$isYesNo ? $position->candidates->where('id', $voteValue)->first() : $position->candidates->first();
                         @endphp
                         <div class="bg-gray-50 dark:bg-slate-700/30 rounded-xl p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center border border-gray-200 dark:border-slate-700 group hover:border-indigo-300 dark:hover:border-indigo-500/50 transition-colors">
                             <div class="mb-3 sm:mb-0">
                                 <h3 class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold mb-1">{{ $position->name }}</h3>
                                 <p class="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                                    @if($candidate)
+                                    @if($isYesNo)
+                                        @if($voteValue === 'yes')
+                                            <svg class="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                                            <span class="text-green-600 dark:text-green-400">YES</span>
+                                            <span class="text-gray-500 dark:text-gray-400 font-normal">for {{ $candidate?->user?->name ?? 'Candidate' }}</span>
+                                        @elseif($voteValue === 'no')
+                                            <svg class="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                            <span class="text-red-600 dark:text-red-400">NO</span>
+                                            <span class="text-gray-500 dark:text-gray-400 font-normal">for {{ $candidate?->user?->name ?? 'Candidate' }}</span>
+                                        @else
+                                            <span class="text-gray-400 italic">No Selection</span>
+                                        @endif
+                                    @elseif($candidate)
                                         <svg class="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                         {{ $candidate->user->name }}
                                     @else
@@ -87,6 +100,8 @@
             <!-- VOTING STEP -->
             @php
                 $currentPosition = $positions[$currentStep];
+                $isYesNo = $this->isYesNoPosition($currentPosition);
+                $singleCandidate = $isYesNo ? $currentPosition->candidates->first() : null;
             @endphp
             
             <div class="p-8 md:p-10 flex-grow">
@@ -98,9 +113,17 @@
                     @if($currentPosition->description)
                         <p class="text-gray-500 dark:text-gray-400 mt-2 ml-11 text-lg leading-relaxed">{{ $currentPosition->description }}</p>
                     @endif
-                    <div class="mt-4 ml-11 inline-flex items-center px-3 py-1 rounded-md bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-sm font-medium border border-blue-100 dark:border-blue-800">
-                        Select {{ $currentPosition->max_votes }} candidate{{ $currentPosition->max_votes > 1 ? 's' : '' }}
-                    </div>
+                    
+                    @if($isYesNo)
+                        <div class="mt-4 ml-11 inline-flex items-center px-3 py-1 rounded-md bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 text-sm font-medium border border-purple-100 dark:border-purple-800">
+                            <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            Vote Yes or No for this candidate
+                        </div>
+                    @else
+                        <div class="mt-4 ml-11 inline-flex items-center px-3 py-1 rounded-md bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-sm font-medium border border-blue-100 dark:border-blue-800">
+                            Select {{ $currentPosition->max_votes }} candidate{{ $currentPosition->max_votes > 1 ? 's' : '' }}
+                        </div>
+                    @endif
                 </div>
 
                 @error("ballot.pos_{$currentPosition->id}")
@@ -110,43 +133,115 @@
                     </div>
                 @enderror
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ml-0 md:ml-11">
-                    @foreach($currentPosition->candidates as $candidate)
-                        <label wire:key="candidate-{{ $candidate->id }}" class="cursor-pointer group relative">
-                            <input type="radio" 
-                                name="position_{{ $currentPosition->id }}" 
-                                wire:model.live="ballot.pos_{{ $currentPosition->id }}" 
-                                value="{{ $candidate->id }}" 
-                                class="peer sr-only">
-                            
-                            <!-- Card -->
-                            <div class="h-full bg-white dark:bg-slate-700/50 rounded-xl border-2 p-6 transition-all duration-200 
-                                        peer-checked:border-amber-500 peer-checked:bg-amber-50/50 dark:peer-checked:bg-amber-900/10 peer-checked:shadow-lg peer-checked:shadow-amber-500/10
-                                        hover:border-gray-300 dark:hover:border-slate-500 hover:shadow-md border-gray-200 dark:border-slate-700 flex flex-col items-center text-center">
+                @if($isYesNo && $singleCandidate)
+                    <!-- YES/NO VOTING UI -->
+                    <div class="ml-0 md:ml-11">
+                        <!-- Candidate Info Card -->
+                        <div class="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-700 rounded-2xl p-8 mb-8 border border-gray-200 dark:border-slate-600 text-center">
+                            <div class="relative inline-block mb-6">
+                                @if($singleCandidate->photo_path)
+                                    <img src="{{ Storage::url($singleCandidate->photo_path) }}" class="h-40 w-40 rounded-full object-cover border-4 border-white dark:border-slate-600 shadow-xl mx-auto">
+                                @else
+                                    <img src="https://ui-avatars.com/api/?name={{ urlencode($singleCandidate->user->name) }}&background=random&size=160" class="h-40 w-40 rounded-full border-4 border-white dark:border-slate-600 shadow-xl mx-auto">
+                                @endif
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">{{ $singleCandidate->user->name }}</h3>
+                            @if($singleCandidate->candidate_number)
+                                <p class="text-gray-500 dark:text-gray-400 font-medium">Candidate #{{ $singleCandidate->candidate_number }}</p>
+                            @endif
+                        </div>
+                        
+                        <!-- Yes/No Buttons -->
+                        <div class="grid grid-cols-2 gap-6 max-w-xl mx-auto">
+                            <!-- YES Button -->
+                            <button type="button" 
+                                wire:click="$set('ballot.pos_{{ $currentPosition->id }}', 'yes')"
+                                class="cursor-pointer group h-full rounded-2xl border-2 p-8 transition-all duration-300 flex flex-col items-center text-center
+                                    {{ ($ballot['pos_' . $currentPosition->id] ?? null) === 'yes' 
+                                        ? 'border-green-500 bg-green-50 dark:bg-green-900/20 shadow-xl shadow-green-500/20 scale-105' 
+                                        : 'bg-white dark:bg-slate-700/50 border-gray-200 dark:border-slate-600 hover:border-green-300 dark:hover:border-green-600 hover:shadow-lg' }}">
                                 
-                                <div class="relative mb-6">
-                                     @if($candidate->photo_path)
-                                        <img src="{{ Storage::url($candidate->photo_path) }}" class="h-40 w-40 rounded-full object-cover border-4 border-white dark:border-slate-600 shadow-md peer-checked:border-amber-500 transition-all transform group-hover:scale-105">
-                                    @else
-                                        <img src="https://ui-avatars.com/api/?name={{ urlencode($candidate->user->name) }}&background=random&size=160" class="h-40 w-40 rounded-full border-4 border-white dark:border-slate-600 shadow-md transition-all transform group-hover:scale-105">
-                                    @endif
-                                    
-                                    <!-- Checkmark -->
-                                    <div class="absolute -bottom-2 -right-2 bg-amber-500 text-white rounded-full p-2 opacity-0 peer-checked:opacity-100 transform scale-0 peer-checked:scale-100 transition-all duration-300 shadow-lg ring-2 ring-white dark:ring-slate-800">
-                                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                                        </svg>
+                                <div class="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                    <svg class="w-10 h-10 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </div>
+                                <h4 class="text-2xl font-bold text-green-700 dark:text-green-400">YES</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">I approve this candidate</p>
+                                
+                                @if(($ballot['pos_' . $currentPosition->id] ?? null) === 'yes')
+                                    <div class="mt-4 text-green-600 dark:text-green-400 font-medium flex items-center gap-1">
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+                                        Selected
                                     </div>
-                                </div>
+                                @endif
+                            </button>
+                            
+                            <!-- NO Button -->
+                            <button type="button" 
+                                wire:click="$set('ballot.pos_{{ $currentPosition->id }}', 'no')"
+                                class="cursor-pointer group h-full rounded-2xl border-2 p-8 transition-all duration-300 flex flex-col items-center text-center
+                                    {{ ($ballot['pos_' . $currentPosition->id] ?? null) === 'no' 
+                                        ? 'border-red-500 bg-red-50 dark:bg-red-900/20 shadow-xl shadow-red-500/20 scale-105' 
+                                        : 'bg-white dark:bg-slate-700/50 border-gray-200 dark:border-slate-600 hover:border-red-300 dark:hover:border-red-600 hover:shadow-lg' }}">
                                 
-                                <h3 class="font-bold text-gray-900 dark:text-white text-xl mb-1 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">{{ $candidate->user->name }}</h3>
-                                <!-- Can add candidate number or party here if available -->
-                                
-                                {{-- Manifesto Snippet --}}
+                                <div class="w-20 h-20 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                    <svg class="w-10 h-10 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
                                 </div>
-                        </label>
-                    @endforeach
-                </div>
+                                <h4 class="text-2xl font-bold text-red-700 dark:text-red-400">NO</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">I do not approve</p>
+                                
+                                @if(($ballot['pos_' . $currentPosition->id] ?? null) === 'no')
+                                    <div class="mt-4 text-red-600 dark:text-red-400 font-medium flex items-center gap-1">
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+                                        Selected
+                                    </div>
+                                @endif
+                            </button>
+                        </div>
+                    </div>
+                @else
+                    <!-- REGULAR CANDIDATE SELECTION -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ml-0 md:ml-11">
+                        @foreach($currentPosition->candidates as $candidate)
+                            <label wire:key="candidate-{{ $candidate->id }}" class="cursor-pointer group relative">
+                                <input type="radio" 
+                                    name="position_{{ $currentPosition->id }}" 
+                                    wire:model.live="ballot.pos_{{ $currentPosition->id }}" 
+                                    value="{{ $candidate->id }}" 
+                                    class="peer sr-only">
+                                
+                                <!-- Card -->
+                                <div class="h-full bg-white dark:bg-slate-700/50 rounded-xl border-2 p-6 transition-all duration-200 
+                                            peer-checked:border-amber-500 peer-checked:bg-amber-50/50 dark:peer-checked:bg-amber-900/10 peer-checked:shadow-lg peer-checked:shadow-amber-500/10
+                                            hover:border-gray-300 dark:hover:border-slate-500 hover:shadow-md border-gray-200 dark:border-slate-700 flex flex-col items-center text-center">
+                                    
+                                    <div class="relative mb-6">
+                                         @if($candidate->photo_path)
+                                            <img src="{{ Storage::url($candidate->photo_path) }}" class="h-40 w-40 rounded-full object-cover border-4 border-white dark:border-slate-600 shadow-md peer-checked:border-amber-500 transition-all transform group-hover:scale-105">
+                                        @else
+                                            <img src="https://ui-avatars.com/api/?name={{ urlencode($candidate->user->name) }}&background=random&size=160" class="h-40 w-40 rounded-full border-4 border-white dark:border-slate-600 shadow-md transition-all transform group-hover:scale-105">
+                                        @endif
+                                        
+                                        <!-- Checkmark -->
+                                        <div class="absolute -bottom-2 -right-2 bg-amber-500 text-white rounded-full p-2 opacity-0 peer-checked:opacity-100 transform scale-0 peer-checked:scale-100 transition-all duration-300 shadow-lg ring-2 ring-white dark:ring-slate-800">
+                                            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    
+                                    <h3 class="font-bold text-gray-900 dark:text-white text-xl mb-1 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">{{ $candidate->user->name }}</h3>
+                                    <!-- Can add candidate number or party here if available -->
+                                    
+                                    {{-- Manifesto Snippet --}}
+                                    </div>
+                            </label>
+                        @endforeach
+                    </div>
+                @endif
             </div>
 
             <div class="bg-gray-50 dark:bg-slate-900/50 px-8 py-6 border-t border-gray-200 dark:border-slate-800 flex justify-between items-center backdrop-blur-sm">
