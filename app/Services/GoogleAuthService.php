@@ -21,23 +21,29 @@ class GoogleAuthService
 
         $email = $googleUser->getEmail();
 
-        // 1. Check the Guest List (The Guard)
+        Log::info('Voter Login Attempt', [
+            'email' => $email,
+            'organization_id' => $organization->id,
+            'organization_name' => $organization->name,
+        ]);
+
+        // 1. Check the Guest List (The Guard) - Case insensitive email comparison
         $membership = OrganizationUser::where('organization_id', $organization->id)
-            ->where('allowed_email', $email)
+            ->whereRaw('LOWER(allowed_email) = ?', [strtolower($email)])
             ->first();
 
         // Use strict check - user MUST be on the list OR have a candidate invitation
         if (!$membership) {
-            // Check for Candidate Invitation
+            // Check for Candidate Invitation (case insensitive)
             $hasInvitation = Candidate::where('organization_id', $organization->id)
-                ->where('email', $email)
+                ->whereRaw('LOWER(email) = ?', [strtolower($email)])
                 ->exists();
 
             if ($hasInvitation) {
                  // Create membership on the fly for invited candidate
                  $membership = OrganizationUser::create([
                      'organization_id' => $organization->id,
-                     'allowed_email' => $email,
+                     'allowed_email' => strtolower($email), // Store normalized
                      'role' => 'voter', 
                      'status' => 'active',
                      'voter_id' => 'CAND-' . strtoupper(\Illuminate\Support\Str::random(6)), 
@@ -46,9 +52,13 @@ class GoogleAuthService
                  
                  Log::info('Created membership for invited candidate', ['email' => $email]);
             } else {
+                // Count total voters for this org for debugging
+                $totalVoters = OrganizationUser::where('organization_id', $organization->id)->count();
+                
                 Log::warning('Guest List Lookup Failed', [
                     'organization_id' => $organization->id,
-                    'email' => $email
+                    'email_attempted' => $email,
+                    'total_voters_in_org' => $totalVoters,
                 ]);
                 throw new IneligibleVoterException();
             }

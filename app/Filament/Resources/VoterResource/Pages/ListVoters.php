@@ -28,13 +28,16 @@ class ListVoters extends ListRecords
                         ->label('Upload CSV (Columns: voter_id, email, [role], [department])')
                         ->disk('public')
                         ->directory('imports')
+                        ->preserveFilenames()
+                        ->previewable(false)
                         ->acceptedFileTypes([
                             'text/csv',
-                            'text/plain',
+                            'text/plain', 
                             'application/csv',
                             'application/vnd.ms-excel',
-                            '.csv',
+                            'application/octet-stream',
                         ])
+                        ->maxSize(5120) // 5MB max
                         ->required(),
                 ])
                 ->action(function (array $data) {

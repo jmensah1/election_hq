@@ -21,6 +21,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $brandName }} - Secure, Anonymous, Verified</title>
 
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}">
+    <link rel="manifest" href="{{ asset('site.webmanifest') }}">
+    <meta name="theme-color" content="#f59e0b">
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -68,20 +76,13 @@
                 <div class="flex-shrink-0 flex items-center gap-3">
                     @if($logoUrl)
                         <img src="{{ $logoUrl }}" alt="{{ $brandName }}" class="h-10 w-auto object-contain">
+                        <span class="font-bold text-xl tracking-tight text-white">{{ $brandName }}</span>
                     @else
-                        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/20">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                        </div>
-                    @endif
-                    <span class="font-bold text-xl tracking-tight text-white">
-                        @if($organization)
-                            {{ $brandName }}
-                        @else
+                        <img src="{{ asset('images/logo.png') }}" alt="Elections HQ" class="h-10 w-auto object-contain">
+                        <span class="font-bold text-xl tracking-tight text-white">
                             Elections<span class="text-amber-500">HQ</span>
-                        @endif
-                    </span>
+                        </span>
+                    @endif
                 </div>
 
                 <!-- Auth Links -->
@@ -243,12 +244,11 @@
             <div class="flex items-center gap-2 mb-4 md:mb-0">
                 @if($logoUrl)
                     <img src="{{ $logoUrl }}" alt="{{ $brandName }}" class="h-6 w-auto object-contain">
+                    <span class="text-slate-300 font-semibold">{{ $brandName }}</span>
                 @else
-                    <div class="w-6 h-6 rounded bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center">
-                        <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                    </div>
+                    <img src="{{ asset('images/logo.png') }}" alt="Elections HQ" class="h-6 w-auto object-contain">
+                    <span class="text-slate-300 font-semibold">Elections<span class="text-amber-500">HQ</span></span>
                 @endif
-                <span class="text-slate-300 font-semibold">{{ $brandName }}</span>
             </div>
             <div class="text-slate-500 text-sm">
                 &copy; {{ date('Y') }} {{ $brandName }}. All rights reserved.

@@ -10,8 +10,10 @@ Route::get('/', function () {
 
  
 
-// 2. Create a dedicated login route that triggers the Google Redirect
-Route::get('/login', [GoogleAuthController::class, 'redirect'])->name('login');
+// 2. Create a dedicated login route that shows the login page
+Route::get('/login', function () {
+    return view('auth.login');
+})->name('login');
 
 // Authentication Routes
 Route::get('/auth/google', [GoogleAuthController::class, 'redirect'])->name('auth.google');

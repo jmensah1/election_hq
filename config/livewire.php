@@ -38,7 +38,7 @@ return [
 
     'temporary_file_upload' => [
         'disk' => 'public',
-        'rules' => ['required', 'file', 'max:12288', 'image'],
+        'rules' => ['required', 'file', 'max:12288'],
         'directory' => 'livewire-tmp',
         'middleware' => 'throttle:60,1',
         'preview_mimes' => [

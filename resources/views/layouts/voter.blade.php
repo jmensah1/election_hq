@@ -38,8 +38,8 @@
                     <!-- Logo / Organization Name -->
                     <div class="flex items-center">
                         <a href="{{ route('voter.elections.index') }}" class="group flex items-center gap-3">
-                             @if(current_organization()->settings['logo'] ?? false)
-                                <img src="{{ current_organization()->settings['logo'] }}" alt="Logo" class="h-10 w-10 rounded-lg object-cover shadow-sm ring-1 ring-gray-900/10 dark:ring-white/10">
+                             @if(current_organization()->logo_path)
+                                <img src="{{ Storage::url(current_organization()->logo_path) }}" alt="Logo" class="h-10 w-10 rounded-lg object-cover shadow-sm ring-1 ring-gray-900/10 dark:ring-white/10">
                              @else
                                 <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-md">
                                     {{ substr(current_organization()->name, 0, 1) }}
