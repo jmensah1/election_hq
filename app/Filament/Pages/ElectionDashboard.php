@@ -25,11 +25,23 @@ class ElectionDashboard extends Page implements HasForms
     protected static ?int $navigationSort = 5;
     protected static string $view = 'filament.pages.election-dashboard';
 
+    #[\Livewire\Attributes\Url]
     public ?int $selectedElectionId = null;
+
     public ?Election $election = null;
 
     public function mount(): void
     {
+        // If selectedElectionId is passed via URL, load that election
+        if ($this->selectedElectionId) {
+            $this->loadElection($this->selectedElectionId);
+            
+            // If loaded successfully, return
+            if ($this->election) {
+                return;
+            }
+        }
+
         // Default to the first active election or most recent one
         $query = Election::query();
         
@@ -246,9 +258,16 @@ class ElectionDashboard extends Page implements HasForms
         // Get hourly voting activity for the last 24 hours
         $startTime = now()->subHours(24);
         
+        $driver = \Illuminate\Support\Facades\DB::connection()->getDriverName();
+        $dateFormat = match ($driver) {
+            'pgsql' => 'TO_CHAR(voted_at, \'YYYY-MM-DD HH24:00:00\')',
+            'sqlite' => 'strftime(\'%Y-%m-%d %H:00:00\', voted_at)',
+            default => 'DATE_FORMAT(voted_at, \'%Y-%m-%d %H:00:00\')', // MySQL/MariaDB
+        };
+
         $activity = VoteConfirmation::where('election_id', $this->election->id)
             ->where('voted_at', '>=', $startTime)
-            ->selectRaw('TO_CHAR(voted_at, \'YYYY-MM-DD HH24:00:00\') as hour, COUNT(*) as count')
+            ->selectRaw("$dateFormat as hour, COUNT(*) as count")
             ->groupBy('hour')
             ->orderBy('hour')
             ->pluck('count', 'hour')

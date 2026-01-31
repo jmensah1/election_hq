@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Election;
 use App\Models\User;
+use App\Models\Candidate;
 use App\Models\Vote;
 use App\Models\VoteConfirmation;
 use Illuminate\Support\Facades\DB;
@@ -72,6 +73,9 @@ class VotingService
                     'is_no_vote' => false,
                     // NO user_id, NO timestamps
                 ]);
+
+                // Increment candidate vote count
+                Candidate::where('id', $candidateId)->increment('vote_count');
             }
 
             // Process Yes/No votes
@@ -105,6 +109,11 @@ class VotingService
                     'candidate_id' => $candidateId, // Always store candidate for reference
                     'is_no_vote' => $isNoVote,
                 ]);
+
+                // Increment candidate vote count ONLY if it's a YES vote
+                if (!$isNoVote) {
+                    Candidate::where('id', $candidateId)->increment('vote_count');
+                }
             }
             
             // 4. Audit Log

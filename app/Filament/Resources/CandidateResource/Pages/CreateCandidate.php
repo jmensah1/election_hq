@@ -17,6 +17,20 @@ class CreateCandidate extends CreateRecord
         return $data;
     }
 
+    protected function afterCreate(): void
+    {
+        $candidate = $this->record;
+        
+        // Log the activity
+        app(\App\Services\AuditService::class)->log(
+            action: 'candidate_created',
+            entityType: \App\Models\Candidate::class,
+            entityId: $candidate->id,
+            newValues: $candidate->toArray(),
+            orgId: $candidate->organization_id
+        );
+    }
+
     protected function getRedirectUrl(): string
     {
         return $this->getResource()::getUrl('index');

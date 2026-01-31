@@ -141,7 +141,18 @@ class ElectionResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->after(function (\Illuminate\Database\Eloquent\Collection $records) {
+                            foreach ($records as $record) {
+                                app(\App\Services\AuditService::class)->log(
+                                    action: 'election_deleted',
+                                    entityType: \App\Models\Election::class,
+                                    entityId: $record->id,
+                                    oldValues: $record->toArray(),
+                                    orgId: $record->organization_id
+                                );
+                            }
+                        }),
                 ]),
             ]);
     }

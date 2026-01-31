@@ -50,16 +50,14 @@ class AuditLogResource extends Resource
             ->schema([
                 Forms\Components\TextInput::make('action')
                     ->readOnly(),
-                Forms\Components\TextInput::make('entity_type')
-                    ->readOnly(),
                 Forms\Components\TextInput::make('entity_id')
-                    ->readOnly(),
-                Forms\Components\KeyValue::make('old_values')
-                    ->readOnly(),
-                Forms\Components\KeyValue::make('new_values')
                     ->readOnly(),
                 Forms\Components\TextInput::make('ip_address')
                     ->readOnly(),
+                Forms\Components\KeyValue::make('old_values')
+                    ->disabled(),
+                Forms\Components\KeyValue::make('new_values')
+                    ->disabled(),
             ]);
     }
 
@@ -70,11 +68,48 @@ class AuditLogResource extends Resource
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable(),
                 Tables\Columns\TextColumn::make('user.name')->searchable(),
                 Tables\Columns\TextColumn::make('action')->searchable(),
-                Tables\Columns\TextColumn::make('entity_type'),
                 Tables\Columns\TextColumn::make('ip_address'),
             ])
             ->filters([
                 //
+            ])
+            ->headerActions([
+                Tables\Actions\Action::make('export')
+                    ->label('Export CSV')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->action(function () {
+                        $query = static::getEloquentQuery();
+                        
+                        $filename = 'audit-logs-' . now()->format('Y-m-d') . '.csv';
+                        
+                        return response()->streamDownload(function () use ($query) {
+                            $handle = fopen('php://output', 'w');
+                            
+                            // Header row
+                            fputcsv($handle, [
+                                'ID', 'User', 'Action', 'Entity ID', 
+                                'IP Address', 'Created At'
+                            ]);
+                            
+                            // Data rows
+                            $query->chunk(100, function ($logs) use ($handle) {
+                                foreach ($logs as $log) {
+                                    fputcsv($handle, [
+                                        $log->id,
+                                        $log->user?->name ?? 'System',
+                                        $log->action,
+                                        $log->entity_id,
+                                        $log->ip_address,
+                                        $log->created_at?->format('Y-m-d H:i:s'),
+                                    ]);
+                                }
+                            });
+                            
+                            fclose($handle);
+                        }, $filename, [
+                            'Content-Type' => 'text/csv',
+                        ]);
+                    }),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

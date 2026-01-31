@@ -17,6 +17,20 @@ class CreateElection extends CreateRecord
         return $data;
     }
 
+    protected function afterCreate(): void
+    {
+        $election = $this->record;
+        
+        // Log the activity
+        app(\App\Services\AuditService::class)->log(
+            action: 'election_created',
+            entityType: \App\Models\Election::class,
+            entityId: $election->id,
+            newValues: $election->toArray(),
+            orgId: $election->organization_id
+        );
+    }
+
     protected function getRedirectUrl(): string
     {
         return $this->getResource()::getUrl('index');
