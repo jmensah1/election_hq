@@ -3,7 +3,15 @@
     // Get organization from subdomain
     $organization = null;
     $host = request()->getHost();
-    $baseDomain = config('app.base_domain', 'elections-hq.me');
+    
+    // Use configured base domain, or auto-detect from current request
+    $baseDomain = config('app.base_domain');
+    
+    if (!$baseDomain) {
+        // Auto-detect: if host is subdomain.example.com, base is example.com
+        $parts = explode('.', $host);
+        $baseDomain = count($parts) >= 2 ? implode('.', array_slice($parts, -2)) : $host;
+    }
     
     if (str_ends_with($host, '.' . $baseDomain)) {
         $subdomain = str_replace('.' . $baseDomain, '', $host);
