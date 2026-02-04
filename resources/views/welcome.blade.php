@@ -97,7 +97,8 @@
                 <div class="flex items-center gap-4">
                     @if (Route::has('login'))
                         @auth
-                            <a href="{{ url('/dashboard') }}" class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Dashboard</a>
+                            <a href="{{ route('voter.elections.index') }}" class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Voting Portal</a>
+                            <a href="{{ route('candidate.portal') }}" class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Candidate Portal</a>
                         @else
                             <a href="{{ route('auth.google') }}" class="group relative px-6 py-2.5 bg-white text-slate-900 font-semibold text-sm rounded-full transition-all hover:bg-amber-50 hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-white">
                                 <span class="flex items-center gap-2">
@@ -158,8 +159,11 @@
 
             <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
                 @auth
-                    <a href="{{ url('/dashboard') }}" class="px-8 py-4 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-lg transition-all transform hover:scale-105 shadow-[0_0_40px_rgba(245,158,11,0.4)]">
-                        Go to Dashboard
+                    <a href="{{ route('voter.elections.index') }}" class="px-8 py-4 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-lg transition-all transform hover:scale-105 shadow-[0_0_40px_rgba(245,158,11,0.4)]">
+                        Go to Voting Portal
+                    </a>
+                    <a href="{{ route('candidate.portal') }}" class="px-8 py-4 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-lg transition-all transform hover:scale-105 border border-slate-700">
+                        Candidate Portal
                     </a>
                 @else
                     <a href="{{ route('auth.google') }}" class="px-8 py-4 bg-white text-slate-900 font-bold rounded-lg transition-all transform hover:scale-105 hover:bg-slate-100 shadow-xl">
