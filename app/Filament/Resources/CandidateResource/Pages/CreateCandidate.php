@@ -29,6 +29,24 @@ class CreateCandidate extends CreateRecord
             newValues: $candidate->toArray(),
             orgId: $candidate->organization_id
         );
+
+        // Send invitation email
+        try {
+            \Illuminate\Support\Facades\Mail::to($candidate->email)
+                ->send(new \App\Mail\CandidateInvitation($candidate));
+            
+            \Filament\Notifications\Notification::make()
+                ->title('Invitation Sent')
+                ->body("An invitation email has been sent to {$candidate->email}.")
+                ->success()
+                ->send();
+        } catch (\Exception $e) {
+            \Filament\Notifications\Notification::make()
+                ->title('Failed to send invitation')
+                ->body("Candidate created, but email failed: " . $e->getMessage())
+                ->warning()
+                ->send();
+        }
     }
 
     protected function getRedirectUrl(): string

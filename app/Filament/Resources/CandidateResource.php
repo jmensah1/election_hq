@@ -73,11 +73,10 @@ class CandidateResource extends Resource
                              return [];
                          }
 
-                         // Search OrganizationUser (Voters list) instead of User table
-                         // This ensures we can invite people who haven't logged in yet
+                         // Search OrganizationUser (Voters list)
                          return \App\Models\OrganizationUser::query()
                             ->where('organization_id', $orgId)
-                            ->with('user') // Eager load user to get name if they exist
+                            ->with('user') 
                             ->orderBy('allowed_email')
                             ->get()
                             ->mapWithKeys(function ($orgUser) {
@@ -96,9 +95,9 @@ class CandidateResource extends Resource
                 Forms\Components\Select::make('user_id')
                     ->relationship('user', 'name')
                     ->label('Linked User Account')
-                    ->disabled() // Admin sets email, system links user on login
-                    ->dehydrated(false) // Don't wipe it out if it's disabled
-                    ->hiddenOn('create'), // Hide on create, show on edit if linked
+                    ->disabled() 
+                    ->dehydrated(false) 
+                    ->hiddenOn('create'), 
                     
                 Forms\Components\TextInput::make('candidate_number')
                     ->maxLength(20),
