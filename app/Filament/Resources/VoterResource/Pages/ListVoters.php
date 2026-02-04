@@ -71,6 +71,9 @@ class ListVoters extends ListRecords
              return;
         }
 
+        /** @var \App\Services\AuditService $auditService */
+        $auditService = app(\App\Services\AuditService::class);
+
         while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
             if (count($data) < 2) continue;
             
@@ -80,17 +83,60 @@ class ListVoters extends ListRecords
             if (empty($voterId) || empty($email)) continue;
 
             try {
-                OrganizationUser::updateOrCreate(
-                    [
+                $voter = OrganizationUser::where('organization_id', $orgId)
+                    ->where('voter_id', $voterId)
+                    ->first();
+
+                if ($voter) {
+                    // Update existing
+                    $oldValues = $voter->getAttributes();
+                    
+                    $voter->allowed_email = $email;
+                    // 'role' => 'voter', // Default - usually we don't overwrite role on simple import unless specified
+                    // 'status' => 'pending', // Default - don't reset status if active
+                    
+                    if ($voter->isDirty()) {
+                        $voter->save();
+                        
+                        $newValues = $voter->getAttributes();
+                        $changes = [];
+                        $original = [];
+
+                        foreach ($newValues as $key => $value) {
+                            if (array_key_exists($key, $oldValues) && $oldValues[$key] !== $value) {
+                                $changes[$key] = $value;
+                                $original[$key] = $oldValues[$key];
+                            }
+                        }
+
+                        $auditService->log(
+                            action: 'voter.imported_updated',
+                            entityType: OrganizationUser::class,
+                            entityId: $voter->id,
+                            oldValues: $original,
+                            newValues: $changes,
+                            orgId: $orgId
+                        );
+                    }
+                } else {
+                    // Create new
+                    $voter = OrganizationUser::create([
                         'organization_id' => $orgId,
                         'voter_id' => $voterId,
-                    ],
-                    [
                         'allowed_email' => $email,
-                        // 'role' => 'voter', // Default
-                        // 'status' => 'pending', // Default
-                    ]
-                );
+                         'role' => 'voter', 
+                         'status' => 'pending', 
+                    ]);
+
+                    $auditService->log(
+                        action: 'voter.imported_created',
+                        entityType: OrganizationUser::class,
+                        entityId: $voter->id,
+                        newValues: $voter->toArray(),
+                        orgId: $orgId
+                    );
+                }
+                
                 $count++;
             } catch (\Exception $e) {
                 $errors++;

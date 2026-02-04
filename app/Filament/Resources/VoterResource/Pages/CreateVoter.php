@@ -21,4 +21,21 @@ class CreateVoter extends CreateRecord
     {
         return $this->getResource()::getUrl('index');
     }
+
+    protected function afterCreate(): void
+    {
+        // Log the creation
+        $voter = $this->record;
+        
+        /** @var \App\Services\AuditService $auditService */
+        $auditService = app(\App\Services\AuditService::class);
+        
+        $auditService->log(
+            action: 'voter.created',
+            entityType: \App\Models\OrganizationUser::class,
+            entityId: $voter->id,
+            newValues: $voter->toArray(),
+            orgId: $voter->organization_id
+        );
+    }
 }
