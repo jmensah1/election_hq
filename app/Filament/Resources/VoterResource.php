@@ -28,7 +28,7 @@ class VoterResource extends Resource
 
     protected static ?string $label = 'Voter';
 
-    protected static ?string $pluralLabel = 'Voters / Users';
+    protected static ?string $pluralLabel = 'Voters';
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
 
@@ -118,6 +118,20 @@ class VoterResource extends Resource
                 Tables\Actions\EditAction::make(),
             ])
             ->headerActions([
+                Tables\Actions\Action::make('template')
+                    ->label('Download Template')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->action(function () {
+                        return response()->streamDownload(function () {
+                            $handle = fopen('php://output', 'w');
+                            fputcsv($handle, ['voter_id', 'allowed_email', 'department', 'role', 'status']);
+                            fputcsv($handle, ['101010', 'john.doe@example.com', 'Computer Science', 'voter', 'active']);
+                            fputcsv($handle, ['102020', 'jane.doe@example.com', 'Engineering', 'voter', 'pending']);
+                            fclose($handle);
+                        }, 'voters_import_template.csv', [
+                            'Content-Type' => 'text/csv',
+                        ]);
+                    }),
                 Tables\Actions\Action::make('export')
                     ->label('Export CSV')
                     ->icon('heroicon-o-arrow-down-tray')

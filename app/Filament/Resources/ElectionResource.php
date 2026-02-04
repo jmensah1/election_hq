@@ -79,12 +79,9 @@ class ElectionResource extends Resource
                     ->required()
                     ->default('draft'),
                 
-                Forms\Components\Section::make('Settings')
+                    Forms\Components\Section::make('Settings')
                     ->schema([
                         Forms\Components\Toggle::make('require_photo'),
-                        Forms\Components\TextInput::make('max_votes_per_position')
-                            ->numeric()
-                            ->default(1),
                     ])->columns(2),
                     
                  Forms\Components\Hidden::make('created_by')

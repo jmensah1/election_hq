@@ -61,10 +61,33 @@ class CandidateResource extends Resource
                     ->required()
                     ->hidden(fn (callable $get) => !$get('election_id')),
                 
-                Forms\Components\TextInput::make('email')
-                    ->email()
+                Forms\Components\Select::make('email')
+                    ->label('Candidate (Search Users)')
+                    ->options(function (callable $get) {
+                         $query = \App\Models\User::query();
+
+                         // Filter by organization to ensure tenant isolation
+                         $orgId = function_exists('current_organization_id') && current_organization_id() 
+                            ? current_organization_id() 
+                            : $get('organization_id');
+
+                         if ($orgId) {
+                            $query->whereHas('organizations', function ($q) use ($orgId) {
+                                $q->where('organizations.id', $orgId);
+                            });
+                         }
+
+                         return $query
+                            ->orderBy('email')
+                            ->get()
+                            ->mapWithKeys(fn ($user) => [$user->email => "{$user->name} ({$user->email})"]);
+                    })
+                    ->searchable()
                     ->required()
-                    ->label('Candidate Email (Invitation)'),
+                    ->live()
+                    ->afterStateUpdated(fn ($state, Forms\Set $set) => 
+                        $set('user_id', \App\Models\User::where('email', $state)->value('id'))
+                    ),
 
                 Forms\Components\Select::make('user_id')
                     ->relationship('user', 'name')
