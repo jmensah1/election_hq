@@ -74,41 +74,31 @@ class CandidatePortal extends Component
             return;
         }
 
-        try {
-            $this->validate([
-                'manifesto' => 'required|min:50',
-                'photo' => 'nullable|image|max:2048',
-                'terms_accepted' => 'accepted',
-            ], [
-                'manifesto.required' => 'Please provide your manifesto or campaign statement.',
-                'manifesto.min' => 'Your manifesto must be at least 50 characters.',
-                'terms_accepted.accepted' => 'You must agree to the election rules and regulations.',
-            ]);
+        $this->validate([
+            'manifesto' => 'required|min:50',
+            'photo' => 'nullable|image|max:2048',
+            'terms_accepted' => 'accepted',
+        ], [
+            'manifesto.required' => 'Please provide your manifesto or campaign statement.',
+            'manifesto.min' => 'Your manifesto must be at least 50 characters.',
+            'terms_accepted.accepted' => 'You must agree to the election rules and regulations.',
+        ]);
 
-            // Handle photo upload
-            if ($this->photo) {
-                $photoPath = $this->photo->store('candidates/photos', 'public');
-                $this->candidate->photo_path = $photoPath;
-            }
-
-            // Update candidate
-            $this->candidate->manifesto = $this->manifesto;
-            $this->candidate->nomination_status = 'pending_vetting';
-            $this->candidate->save();
-
-            session()->flash('success', 'Your nomination has been submitted successfully! The Electoral Commission will review your application.');
-
-            // Refresh the candidate data
-            $this->candidate = $this->candidate->fresh();
-            
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            // Rethrow validation exceptions so Livewire handles them (showing field errors)
-            throw $e;
-        } catch (\Exception $e) {
-            // Catch other errors (file upload, db, etc)
-            report($e);
-            session()->flash('error', 'An error occurred while submitting your application: ' . $e->getMessage());
+        // Handle photo upload
+        if ($this->photo) {
+            $photoPath = $this->photo->store('candidates/photos', 'public');
+            $this->candidate->photo_path = $photoPath;
         }
+
+        // Update candidate
+        $this->candidate->manifesto = $this->manifesto;
+        $this->candidate->nomination_status = 'pending_vetting';
+        $this->candidate->save();
+
+        session()->flash('success', 'Your nomination has been submitted successfully! The Electoral Commission will review your application.');
+
+        // Refresh the candidate data
+        $this->candidate = $this->candidate->fresh();
     }
 
     public function render()
