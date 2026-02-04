@@ -28,7 +28,7 @@ class GoogleAuthController extends Controller
         $callbackUrl = route('auth.google.callback');
         
         // DEBUG: Verify the URL being generated
-        // dd("GENERATED_CALLBACK_URL: " . $callbackUrl);
+
         
         return Socialite::driver('google')
             ->redirectUrl($callbackUrl)

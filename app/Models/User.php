@@ -87,7 +87,6 @@ class User extends Authenticatable implements FilamentUser
         $currentOrgId = function_exists('current_organization_id') ? current_organization_id() : null;
         
         if (!$currentOrgId) {
-            file_put_contents(public_path('debug_log.txt'), date('H:i:s') . " User Access Check Failed: No current_organization_id found.\n", FILE_APPEND);
             return false;
         }
 
