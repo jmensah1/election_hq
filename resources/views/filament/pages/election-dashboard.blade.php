@@ -152,14 +152,27 @@
                             Results by Position
                         </div>
                         @if($election->status === 'completed' || $election->results_published)
-                            <x-filament::button
-                                wire:click="exportResults"
-                                size="sm"
-                                color="gray"
-                                icon="heroicon-o-arrow-down-tray"
-                            >
-                                Export Results
-                            </x-filament::button>
+                            <div class="flex gap-2">
+                                <x-filament::button
+                                    tag="a"
+                                    href="{{ route('admin.elections.print', ['election' => $election->id]) }}"
+                                    target="_blank"
+                                    size="sm"
+                                    color="gray"
+                                    icon="heroicon-o-printer"
+                                >
+                                    Print as PDF
+                                </x-filament::button>
+
+                                <x-filament::button
+                                    wire:click="exportResults"
+                                    size="sm"
+                                    color="gray"
+                                    icon="heroicon-o-arrow-down-tray"
+                                >
+                                    Export Results
+                                </x-filament::button>
+                            </div>
                         @endif
                     </div>
                 </x-slot>

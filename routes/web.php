@@ -37,3 +37,6 @@ Route::middleware(['auth'])->prefix('vote')->name('voter.')->group(function () {
     Route::get('/confirmation', [App\Http\Controllers\Voter\VotingController::class, 'confirmation'])->name('confirmation');
     Route::get('/results/{election}', [App\Http\Controllers\Voter\VotingController::class, 'results'])->name('results');
 });
+
+// Admin Print Route
+Route::middleware(['auth'])->get('/admin/elections/{election}/print', App\Http\Controllers\Admin\PrintElectionResultsController::class)->name('admin.elections.print');

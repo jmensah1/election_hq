@@ -353,8 +353,8 @@ class ElectionDashboard extends Page implements HasForms
             
             // Header row
             fputcsv($handle, [
-                'Position', 'Candidate Name', 'Candidate Email', 
-                'Vote Count', 'Percentage', 'Is Winner', 'Rank'
+                'Position', 'Candidate Name', 
+                'Vote Count', 'Percentage'
             ]);
             
             $positions = $election->positions()
@@ -367,7 +367,6 @@ class ElectionDashboard extends Page implements HasForms
 
             foreach ($positions as $position) {
                 $totalVotes = $position->candidates->sum('vote_count');
-                $rank = 1;
                 
                 foreach ($position->candidates as $candidate) {
                     $percentage = $totalVotes > 0 ? round(($candidate->vote_count / $totalVotes) * 100, 1) : 0;
@@ -375,11 +374,8 @@ class ElectionDashboard extends Page implements HasForms
                     fputcsv($handle, [
                         $position->name,
                         $candidate->user?->name ?? 'N/A',
-                        $candidate->email,
                         $candidate->vote_count,
                         $percentage . '%',
-                        $candidate->is_winner ? 'Yes' : 'No',
-                        $rank++,
                     ]);
                 }
             }
