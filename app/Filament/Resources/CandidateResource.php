@@ -62,25 +62,29 @@ class CandidateResource extends Resource
                     ->hidden(fn (callable $get) => !$get('election_id')),
                 
                 Forms\Components\Select::make('email')
-                    ->label('Candidate (Search Users)')
+                    ->label('Candidate (Search Voters)')
                     ->options(function (callable $get) {
-                         $query = \App\Models\User::query();
-
                          // Filter by organization to ensure tenant isolation
                          $orgId = function_exists('current_organization_id') && current_organization_id() 
                             ? current_organization_id() 
                             : $get('organization_id');
 
-                         if ($orgId) {
-                            $query->whereHas('organizations', function ($q) use ($orgId) {
-                                $q->where('organizations.id', $orgId);
-                            });
+                         if (!$orgId) {
+                             return [];
                          }
 
-                         return $query
-                            ->orderBy('email')
+                         // Search OrganizationUser (Voters list) instead of User table
+                         // This ensures we can invite people who haven't logged in yet
+                         return \App\Models\OrganizationUser::query()
+                            ->where('organization_id', $orgId)
+                            ->with('user') // Eager load user to get name if they exist
+                            ->orderBy('allowed_email')
                             ->get()
-                            ->mapWithKeys(fn ($user) => [$user->email => "{$user->name} ({$user->email})"]);
+                            ->mapWithKeys(function ($orgUser) {
+                                $name = $orgUser->user?->name ?? 'Pending Registration';
+                                $label = "{$name} ({$orgUser->allowed_email}) [{$orgUser->voter_id}]";
+                                return [$orgUser->allowed_email => $label];
+                            });
                     })
                     ->searchable()
                     ->required()
