@@ -33,7 +33,7 @@ class ServerSpecsWidget extends BaseWidget
                 // Method 1: loadavg
                 $load = sys_getloadavg();
                 if ($load) {
-                    $usage = $load[0] . ' (1m) / ' . $load[1] . ' (5m)';
+                    $usage = round($load[0], 2) . ' (1m) / ' . round($load[1], 2) . ' (5m)';
                     $color = $load[0] > 4 ? 'danger' : 'success';
                 }
                 
