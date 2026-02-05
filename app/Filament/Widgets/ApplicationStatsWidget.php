@@ -15,6 +15,11 @@ class ApplicationStatsWidget extends BaseWidget
     
     protected static ?int $sort = 3;
 
+    public static function canView(): bool
+    {
+        return auth()->user()?->is_super_admin ?? false;
+    }
+
     protected function getStats(): array
     {
         return [

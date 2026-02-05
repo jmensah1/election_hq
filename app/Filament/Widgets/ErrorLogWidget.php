@@ -12,6 +12,11 @@ class ErrorLogWidget extends Widget
     protected static ?int $sort = 4;
     
     protected int|string|array $columnSpan = 'full';
+
+    public static function canView(): bool
+    {
+        return auth()->user()?->is_super_admin ?? false;
+    }
     
     public $errorCount = 0;
     public $recentLogs = [];

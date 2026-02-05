@@ -12,6 +12,11 @@ class ServerSpecsWidget extends BaseWidget
     
     protected static ?int $sort = 1;
 
+    public static function canView(): bool
+    {
+        return auth()->user()?->is_super_admin ?? false;
+    }
+
     protected function getStats(): array
     {
         return [
