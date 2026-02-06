@@ -47,7 +47,7 @@ class GoogleAuthController extends Controller
             
             $user = $this->authService->handleLogin($socialiteUser);
 
-            Auth::login($user, true);
+            Auth::login($user);
 
             return redirect()->intended(route('voter.elections.index'));
 
