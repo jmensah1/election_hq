@@ -111,8 +111,18 @@ class VoterResource extends Resource
                 Tables\Columns\TextColumn::make('user.name')->label('Linked User'),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('role'),
-                Tables\Filters\SelectFilter::make('status'),
+                Tables\Filters\SelectFilter::make('role')
+                    ->options([
+                        'voter' => 'Voter',
+                        'election_officer' => 'Election Officer',
+                        'admin' => 'Admin',
+                    ]),
+                Tables\Filters\SelectFilter::make('status')
+                    ->options([
+                        'pending' => 'Pending (Not Logged In)',
+                        'active' => 'Active',
+                        'suspended' => 'Suspended',
+                    ]),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
