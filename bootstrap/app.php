@@ -17,6 +17,13 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\SetOrganizationContext::class,
             \App\Http\Middleware\SetOrganizationTimezone::class,
         ]);
+
+        $middleware->redirectGuestsTo(function (\Illuminate\Http\Request $request) {
+            if ($request->is('admin/*') || $request->is('*/admin/*')) {
+                return route('filament.admin.auth.login');
+            }
+            return route('login');
+        });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         \Sentry\Laravel\Integration::handles($exceptions);
@@ -25,6 +32,10 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($e->getStatusCode() === 419) {
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();
+
+                if ($request->is('admin/*') || $request->is('*/admin/*')) {
+                     return redirect()->route('filament.admin.auth.login')->with('error', 'Session expired, please login again.');
+                }
                 
                 return redirect()->route('login')->with('error', 'Page expired, please login again.');
             }
