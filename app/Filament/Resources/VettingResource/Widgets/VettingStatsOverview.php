@@ -6,14 +6,28 @@ use App\Models\Candidate;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
+use Livewire\Attributes\Reactive;
+
 class VettingStatsOverview extends BaseWidget
 {
+    #[Reactive]
+    public $electionId = null;
+
+
     protected function getStats(): array
     {
+        $electionId = $this->electionId;
+
+        if (! $electionId) {
+            $electionId = \App\Models\Election::where('organization_id', current_organization_id())->latest()->first()?->id;
+        }
+
         $query = Candidate::query()
             ->whereIn('nomination_status', ['pending_vetting', 'approved']);
 
-        if (!auth()->user()->is_super_admin && function_exists('current_organization_id') && current_organization_id()) {
+        if ($electionId) {
+            $query->where('election_id', $electionId);
+        } elseif (!auth()->user()->is_super_admin && function_exists('current_organization_id') && current_organization_id()) {
             $query->where('organization_id', current_organization_id());
         }
 

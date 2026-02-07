@@ -203,6 +203,7 @@ class VettingResource extends Resource
                 Tables\Filters\SelectFilter::make('election_id')
                     ->relationship('election', 'title')
                     ->label('Election')
+                    ->default(fn () => \App\Models\Election::where('organization_id', current_organization_id())->latest()->first()?->id)
                     ->preload(),
 
                 Tables\Filters\SelectFilter::make('position_id')

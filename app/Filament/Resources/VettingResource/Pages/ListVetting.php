@@ -49,4 +49,11 @@ class ListVetting extends ListRecords
             VettingResource\Widgets\VettingStatsOverview::class,
         ];
     }
+
+    public function getWidgetData(): array
+    {
+        return [
+            'electionId' => data_get($this->tableFilters, 'election_id.value'),
+        ];
+    }
 }
