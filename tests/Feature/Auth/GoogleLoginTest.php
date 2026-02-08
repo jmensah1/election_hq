@@ -136,4 +136,88 @@ class GoogleLoginTest extends TestCase
         $response->assertRedirect(route('login'));
         $this->assertGuest();
     }
+
+    public function test_google_names_are_title_cased()
+    {
+        // 1. Create Organization
+        $org = Organization::factory()->create([
+            'subdomain' => 'univ-test',
+            'status' => 'active'
+        ]);
+
+        // 2. Add email to guest list
+        OrganizationUser::create([
+            'organization_id' => $org->id,
+            'voter_id' => '999',
+            'allowed_email' => 'caps@example.com',
+            'role' => 'voter',
+            'status' => 'pending'
+        ]);
+
+        // 3. Mock Google User with ALL CAPS name
+        $abstractUser = Mockery::mock('Laravel\Socialite\Two\User');
+        $abstractUser->shouldReceive('getId')->andReturn('google-caps');
+        $abstractUser->shouldReceive('getName')->andReturn('JOHN DOE'); // ALL CAPS
+        $abstractUser->shouldReceive('getEmail')->andReturn('caps@example.com');
+        $abstractUser->shouldReceive('getAvatar')->andReturn('pic.jpg');
+
+        Socialite::shouldReceive('driver->user')->andReturn($abstractUser);
+
+        // 4. Attempt Login
+        $response = $this->get('http://univ-test.elections-hq.test/auth/google/callback');
+
+        // 5. Assert Success
+        $response->assertRedirect(route('voter.elections.index'));
+        
+        $user = User::where('email', 'caps@example.com')->first();
+        $this->assertNotNull($user);
+        
+        // 6. Assert Name is Title Cased
+        $this->assertEquals('John Doe', $user->name);
+    }
+
+    public function test_existing_user_name_preserves_local_changes()
+    {
+        // 1. Create Organization
+        $org = Organization::factory()->create([
+            'subdomain' => 'univ-test-2',
+            'status' => 'active'
+        ]);
+
+        // 2. Create User with custom name (simulating Candidate Portal edit)
+        $user = User::factory()->create([
+            'email' => 'candidate@example.com',
+            'name' => 'Jane Candidate', // The name we want to keep
+        ]);
+
+        // 3. Add to guest list
+        OrganizationUser::create([
+            'organization_id' => $org->id,
+            'user_id' => $user->id,
+            'allowed_email' => 'candidate@example.com',
+            'role' => 'voter', 
+            'status' => 'active'
+        ]);
+
+        // 4. Mock Google User with DIFFERENT name
+        $abstractUser = Mockery::mock('Laravel\Socialite\Two\User');
+        $abstractUser->shouldReceive('getId')->andReturn('google-999');
+        $abstractUser->shouldReceive('getName')->andReturn('JANE DOE'); // Google's name (different)
+        $abstractUser->shouldReceive('getEmail')->andReturn('candidate@example.com');
+        $abstractUser->shouldReceive('getAvatar')->andReturn('pic.jpg');
+
+        Socialite::shouldReceive('driver->user')->andReturn($abstractUser);
+
+        // 5. Attempt Login
+        $response = $this->get('http://univ-test-2.elections-hq.test/auth/google/callback');
+
+        // 6. Assert Success
+        $response->assertRedirect(route('voter.elections.index'));
+        
+        // 7. Assert Name is UNCHANGED
+        $user->refresh();
+        $this->assertEquals('Jane Candidate', $user->name);
+        $this->assertNotEquals('Jane Doe', $user->name);
+        $this->assertNotEquals('JANE DOE', $user->name);
+    }
 }

@@ -69,7 +69,8 @@ class GoogleAuthService
 
         if ($user) {
             $user->update([
-                'name' => $googleUser->getName(),
+                // 'name' => ... We DO NOT update the name for existing users. 
+                // This preserves any custom name changes they made in the Candidate Portal.
                 'google_id' => $googleUser->getId(),
                 'avatar' => $googleUser->getAvatar(),
                 'email_verified_at' => $user->email_verified_at ?? now(), 
@@ -77,7 +78,7 @@ class GoogleAuthService
         } else {
             $user = User::create([
                 'email' => $email,
-                'name' => $googleUser->getName(),
+                'name' => \Illuminate\Support\Str::title($googleUser->getName()),
                 'google_id' => $googleUser->getId(),
                 'avatar' => $googleUser->getAvatar(),
                 'password' => \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::random(32)),

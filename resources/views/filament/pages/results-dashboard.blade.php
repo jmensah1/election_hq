@@ -12,12 +12,12 @@
                             <div class="p-4 border rounded-lg flex items-center justify-between">
                                 <div class="flex items-center space-x-4">
                                     @if($candidate->photo_path)
-                                        <img src="{{ Storage::url($candidate->photo_path) }}" class="w-12 h-12 rounded-full object-cover">
+                                        <img src="{{ Storage::url($candidate->photo_path) }}" class="w-10 h-10 rounded-full object-cover">
                                     @else
-                                        <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
-                                            <span class="text-gray-500 text-xl">{{ substr($candidate->user->name, 0, 1) }}</span>
+                                        <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                            <span class="text-gray-500 text-sm font-bold">{{ substr($candidate->user->name, 0, 1) }}</span>
                                         </div>
-                                    @endif
+									@endif
                                     <div>
                                         <h3 class="font-bold">{{ $candidate->user->name }}</h3>
                                         <p class="text-sm text-gray-500">Candidate</p>

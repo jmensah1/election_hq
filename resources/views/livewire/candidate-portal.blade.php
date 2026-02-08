@@ -61,6 +61,21 @@
                 </div>
                 
                 <form wire:submit="submit" class="p-6 space-y-6">
+                    {{-- Name --}}
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Full Name
+                        </label>
+                        <input 
+                            type="text" 
+                            id="name" 
+                            wire:model="name" 
+                            class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-shadow"
+                            placeholder="Enter your full name"
+                        >
+                        @error('name') <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+                    </div>
+
                     {{-- Photo Upload --}}
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Candidate Photo</label>

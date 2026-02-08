@@ -76,6 +76,11 @@ class User extends Authenticatable implements FilamentUser
         return $this->organizations()->where('organization_id', $organizationId)->first()?->pivot;
     }
 
+    public function organizationUser()
+    {
+        return $this->hasOne(OrganizationUser::class)->where('organization_id', current_organization_id());
+    }
+
     public function canAccessPanel(Panel $panel): bool
     {
         // 1. Super Admins can access everything everywhere
