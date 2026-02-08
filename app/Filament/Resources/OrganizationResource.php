@@ -47,7 +47,9 @@ class OrganizationResource extends Resource
                     ->unique(ignoreRecord: true),
                 Forms\Components\TextInput::make('custom_domain')
                     ->maxLength(255)
-                    ->unique(ignoreRecord: true),
+                    ->unique(ignoreRecord: true)
+                    ->disabled(fn (\Filament\Forms\Get $get) => !app(\App\Services\PlanLimitService::class)->getPlanLimits($get('subscription_plan') ?? 'free')['custom_domain'])
+                    ->helperText(fn (\Filament\Forms\Get $get) => !app(\App\Services\PlanLimitService::class)->getPlanLimits($get('subscription_plan') ?? 'free')['custom_domain'] ? 'Requires Basic plan or higher.' : null),
                 Forms\Components\FileUpload::make('logo_path')
                     ->image()
                     ->disk('public')
@@ -73,9 +75,12 @@ class OrganizationResource extends Resource
                         'enterprise' => 'Enterprise',
                     ])
                     ->required()
-                    ->default('free'),
+                    ->default('free')
+                    ->live(),
                 Forms\Components\DatePicker::make('subscription_expires_at'),
-                Forms\Components\Toggle::make('sms_enabled'),
+                Forms\Components\Toggle::make('sms_enabled')
+                    ->disabled(fn (\Filament\Forms\Get $get) => !app(\App\Services\PlanLimitService::class)->getPlanLimits($get('subscription_plan') ?? 'free')['sms_enabled'])
+                    ->helperText(fn (\Filament\Forms\Get $get) => !app(\App\Services\PlanLimitService::class)->getPlanLimits($get('subscription_plan') ?? 'free')['sms_enabled'] ? 'Requires Premium plan or higher.' : null),
                 Forms\Components\TextInput::make('sms_sender_id')
                     ->maxLength(11),
                 Forms\Components\TextInput::make('max_voters')

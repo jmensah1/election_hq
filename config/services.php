@@ -41,4 +41,10 @@ return [
         'redirect' => '/auth/google/callback',
     ],
 
+    'sms' => [
+        'key' => env('SMS_API_KEY'),
+        'sender_id' => env('SMS_SENDER_ID', 'ElectionsHQ'),
+        'enabled' => env('SMS_ENABLED', false),
+    ],
+
 ];

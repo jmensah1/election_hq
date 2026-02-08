@@ -14,6 +14,25 @@ class CreateElection extends CreateRecord
             $data['organization_id'] = current_organization_id();
         }
         
+        $orgId = $data['organization_id'] ?? null;
+        if ($orgId) {
+            $org = \App\Models\Organization::find($orgId); // Ensure Model exists
+            $planService = app(\App\Services\PlanLimitService::class);
+            
+            if ($org && !$planService->canCreateElection($org)) {
+                 $message = $planService->getLimitMessage('elections', $org);
+                
+                \Filament\Notifications\Notification::make()
+                    ->title('Plan Limit Reached')
+                    ->body($message)
+                    ->danger()
+                    ->persistent()
+                    ->send();
+                
+                $this->halt();
+            }
+        }
+
         return $data;
     }
 

@@ -13,6 +13,25 @@ class CreateVoter extends CreateRecord
         if (!auth()->user()->is_super_admin && function_exists('current_organization_id') && current_organization_id()) {
             $data['organization_id'] = current_organization_id();
         }
+
+        $orgId = $data['organization_id'] ?? null;
+        if ($orgId) {
+            $org = \App\Models\Organization::find($orgId);
+            $planService = app(\App\Services\PlanLimitService::class);
+            
+            if ($org && !$planService->canAddVoter($org)) {
+                $message = $planService->getLimitMessage('voters', $org); // Removed $feature
+                
+                \Filament\Notifications\Notification::make()
+                    ->title('Plan Limit Reached')
+                    ->body($message)
+                    ->danger()
+                    ->persistent()
+                    ->send();
+                
+                $this->halt();
+            }
+        }
         
         return $data;
     }
