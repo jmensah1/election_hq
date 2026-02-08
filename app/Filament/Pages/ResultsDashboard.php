@@ -17,6 +17,11 @@ class ResultsDashboard extends Page
     
     protected static ?string $navigationGroup = 'Reporting';
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->is_super_admin ?? false;
+    }
+
     public ?string $election_id = null;
 
     public function form(Form $form): Form

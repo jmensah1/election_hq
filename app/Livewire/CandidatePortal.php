@@ -11,6 +11,7 @@ class CandidatePortal extends Component
     use WithFileUploads;
 
     public $candidate;
+    public $name;
     public $manifesto;
     public $photo;
     public $terms_accepted = false;
@@ -18,6 +19,7 @@ class CandidatePortal extends Component
     public function mount()
     {
         $user = auth()->user();
+        $this->name = $user->name;
         
         // 1. Try to find by existing link (Primary Method)
         $this->candidate = Candidate::where('user_id', $user->id)
@@ -75,10 +77,12 @@ class CandidatePortal extends Component
         }
 
         $this->validate([
+            'name' => 'required|string|max:255',
             'manifesto' => 'required|min:50',
             'photo' => 'nullable|image|max:2048',
             'terms_accepted' => 'accepted',
         ], [
+            'name.required' => 'Please provide your name.',
             'manifesto.required' => 'Please provide your manifesto or campaign statement.',
             'manifesto.min' => 'Your manifesto must be at least 50 characters.',
             'terms_accepted.accepted' => 'You must agree to the election rules and regulations.',
@@ -91,6 +95,7 @@ class CandidatePortal extends Component
         }
 
         // Update candidate
+        auth()->user()->update(['name' => $this->name]);
         $this->candidate->manifesto = $this->manifesto;
         $this->candidate->nomination_status = 'pending_vetting';
         $this->candidate->save();
