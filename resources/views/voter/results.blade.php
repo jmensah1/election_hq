@@ -1,11 +1,9 @@
 <x-voter-layout>
     <div class="max-w-5xl mx-auto">
-```blade
         <div class="mb-10 text-center">
             <h1 class="text-4xl font-extrabold text-gray-900 dark:text-white">{{ $election->title }} - Results</h1>
             <p class="mt-2 text-lg text-gray-600 dark:text-gray-400">Official Results Declaration</p>
         </div>
-```
 
         <div class="grid gap-8">
             @foreach($election->positions as $position)
