@@ -115,7 +115,7 @@ class ElectionResource extends Resource
                 Tables\Actions\Action::make('dashboard')
                     ->label('Dashboard')
                     ->icon('heroicon-o-chart-bar-square')
-                    ->url(fn (Election $record) => route('filament.admin.pages.election-dashboard', ['selectedElectionId' => $record->id]))
+                    ->url(fn (Election $record) => route('filament.admin.pages.vote.elections', ['selectedElectionId' => $record->id]))
                     ->color('info'),
                 Tables\Actions\Action::make('publishResults')
                     ->label('Publish Results')

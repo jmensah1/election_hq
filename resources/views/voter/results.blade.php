@@ -1,8 +1,8 @@
 <x-voter-layout>
     <div class="max-w-5xl mx-auto">
         <div class="mb-10 text-center">
-            <h1 class="text-4xl font-extrabold text-gray-900">{{ $election->title }} - Results</h1>
-            <p class="mt-2 text-lg text-gray-600">Official Results Declaration</p>
+            <h1 class="text-4xl font-extrabold text-gray-900 dark:text-white">{{ $election->title }} - Results</h1>
+            <p class="mt-2 text-lg text-gray-600 dark:text-gray-400">Official Results Declaration</p>
         </div>
 
         <div class="grid gap-8">

@@ -12,6 +12,7 @@ use Filament\Forms\Form;
 class ResultsDashboard extends Page
 {
     protected static ?string $navigationIcon = 'heroicon-o-chart-bar';
+    protected static ?string $navigationLabel = 'Published Results';
 
     protected static string $view = 'filament.pages.results-dashboard';
     
@@ -19,7 +20,8 @@ class ResultsDashboard extends Page
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->is_super_admin ?? false;
+        // Only allow Super Admins
+        return auth()->user()?->is_super_admin === true;
     }
 
     public ?string $election_id = null;
@@ -30,7 +32,19 @@ class ResultsDashboard extends Page
             ->schema([
                 Select::make('election_id')
                     ->label('Select Election')
-                    ->options(Election::where('status', '!=', 'draft')->pluck('title', 'id'))
+                    ->options(function () {
+                        $query = Election::query()->where('status', '!=', 'draft');
+                        
+                        // For non-super admins, restrict to published results or completed elections
+                        if (!auth()->user()?->is_super_admin) {
+                            $query->where(function ($q) {
+                                $q->where('results_published', true)
+                                  ->orWhere('status', 'completed');
+                            });
+                        }
+                        
+                        return $query->pluck('title', 'id');
+                    })
                     ->reactive()
                     ->afterStateUpdated(function () {
                         // Just trigger refresh
@@ -48,6 +62,20 @@ class ResultsDashboard extends Page
             $election = Election::with(['positions', 'candidates.user'])->find($this->election_id);
             
             if ($election) {
+                // Check if user can view these results
+                $canView = auth()->user()?->is_super_admin || 
+                           $election->results_published || 
+                           $election->status === 'completed';
+
+                if (!$canView) {
+                     // If they can't view, return empty
+                     return [
+                        'results' => [],
+                        'positions' => [],
+                        'candidates' => [],
+                     ];
+                }
+
                 // Calculate results
                 // Group votes by candidate_id and count
                 $voteCounts = Vote::where('election_id', $election->id)

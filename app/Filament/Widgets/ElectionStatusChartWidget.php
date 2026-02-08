@@ -13,6 +13,12 @@ class ElectionStatusChartWidget extends ChartWidget
     
     protected int | string | array $columnSpan = 'half';
 
+    public static function canView(): bool
+    {
+        // Disabled as per user request
+        return false;
+    }
+
     protected function getData(): array
     {
         $user = auth()->user();

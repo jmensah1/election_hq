@@ -15,9 +15,8 @@ class MemberRolesChartWidget extends ChartWidget
 
     public static function canView(): bool
     {
-        // Only show for vendor admins, not super admins
-        $user = auth()->user();
-        return !($user?->is_super_admin ?? false);
+        // Disabled as per user request
+        return false;
     }
 
     protected function getData(): array
