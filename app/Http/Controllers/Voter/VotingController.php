@@ -53,4 +53,13 @@ class VotingController extends Controller
 
         return view('voter.results', compact('election'));
     }
+
+    public function published_results()
+    {
+        $elections = Election::where('results_published', true)
+            ->orderBy('voting_end_date', 'desc')
+            ->get();
+
+        return view('voter.published_results', compact('elections'));
+    }
 }

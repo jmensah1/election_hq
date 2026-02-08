@@ -50,8 +50,6 @@ class AuditLogResource extends Resource
             ->schema([
                 Forms\Components\TextInput::make('action')
                     ->readOnly(),
-                Forms\Components\TextInput::make('entity_id')
-                    ->readOnly(),
                 Forms\Components\TextInput::make('ip_address')
                     ->readOnly(),
                 Forms\Components\KeyValue::make('old_values')
@@ -87,7 +85,8 @@ class AuditLogResource extends Resource
                             
                             // Header row
                             fputcsv($handle, [
-                                'ID', 'User', 'Action', 'Entity ID', 
+                                'ID', 'User', 'Action', 
+                                'Old Values', 'New Values',
                                 'IP Address', 'Created At'
                             ]);
                             
@@ -98,7 +97,8 @@ class AuditLogResource extends Resource
                                         $log->id,
                                         $log->user?->name ?? 'System',
                                         $log->action,
-                                        $log->entity_id,
+                                        is_array($log->old_values) ? json_encode($log->old_values) : $log->old_values,
+                                        is_array($log->new_values) ? json_encode($log->new_values) : $log->new_values,
                                         $log->ip_address,
                                         $log->created_at?->format('Y-m-d H:i:s'),
                                     ]);
@@ -113,7 +113,8 @@ class AuditLogResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-            ]);
+            ])
+            ->defaultSort('created_at', 'desc');
     }
 
     public static function getPages(): array

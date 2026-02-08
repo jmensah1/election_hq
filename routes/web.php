@@ -35,6 +35,7 @@ Route::middleware(['auth'])->prefix('vote')->name('voter.')->group(function () {
     Route::middleware('throttle:vote')->post('/elections/{election}', [App\Http\Controllers\Voter\VotingController::class, 'store'])->name('elections.store');
     Route::get('/elections/{election}/vote', [App\Http\Controllers\Voter\VotingController::class, 'show'])->name('elections.show');
     Route::get('/confirmation', [App\Http\Controllers\Voter\VotingController::class, 'confirmation'])->name('confirmation');
+    Route::get('/results', [App\Http\Controllers\Voter\VotingController::class, 'published_results'])->name('published_results');
     Route::get('/results/{election}', [App\Http\Controllers\Voter\VotingController::class, 'results'])->name('results');
 });
 

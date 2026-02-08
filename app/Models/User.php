@@ -115,4 +115,9 @@ class User extends Authenticatable implements FilamentUser
 
         return $allowed;
     }
+
+    public function candidates()
+    {
+        return $this->hasMany(Candidate::class);
+    }
 }

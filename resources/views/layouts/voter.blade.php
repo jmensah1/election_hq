@@ -13,7 +13,7 @@
           }
       }"
       x-init="$watch('darkMode', val => val ? document.documentElement.classList.add('dark') : document.documentElement.classList.remove('dark')); if(darkMode) document.documentElement.classList.add('dark');"
-      class="scroll-smooth">
+      class="h-full bg-gray-50 dark:bg-slate-900">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -23,147 +23,247 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
+    <style>
+        [x-cloak] { display: none !important; }
+        
+        /* Change active navigation selector from blue/indigo to amber */
+        nav a.bg-indigo-600,
+        nav a.bg-indigo-700,
+        nav a.bg-indigo-800,
+        nav a.bg-blue-600,
+        nav a.bg-blue-700,
+        nav a.bg-blue-800,
+        nav button.bg-indigo-600,
+        nav button.bg-indigo-700,
+        nav button.bg-blue-600,
+        nav button.bg-blue-700,
+        .bg-indigo-600,
+        .bg-indigo-700,
+        .bg-blue-600,
+        .bg-blue-700 {
+            background-color: rgb(245 158 11) !important; /* amber-500 */
+        }
+        
+        /* Hover states for amber */
+        nav a.bg-indigo-600:hover,
+        nav a.bg-blue-600:hover,
+        nav button.bg-indigo-600:hover,
+        nav button.bg-blue-600:hover {
+            background-color: rgb(217 119 6) !important; /* amber-600 */
+        }
+        
+        /* Text colors */
+        nav a.text-indigo-600,
+        nav a.text-blue-600,
+        .text-indigo-600,
+        .text-blue-600 {
+            color: rgb(245 158 11) !important; /* amber-500 */
+        }
+        
+        /* Ring/border colors */
+        .ring-indigo-600,
+        .ring-blue-600,
+        .border-indigo-600,
+        .border-blue-600 {
+            border-color: rgb(245 158 11) !important;
+            --tw-ring-color: rgb(245 158 11) !important;
+        }
+    </style>
 </head>
-<body class="font-sans antialiased bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors duration-300">
-    <div class="min-h-screen flex flex-col">
-        <!-- Navigation -->
-        <nav class="bg-white dark:bg-slate-950 border-b border-gray-200 dark:border-slate-800 transition-colors duration-300 sticky top-0 z-50">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between h-20">
-                    <!-- Logo / Organization Name -->
-                    <div class="flex items-center">
-                        <a href="{{ route('voter.elections.index') }}" class="group flex items-center gap-3">
-                             @if(current_organization()->logo_path)
-                                <img src="{{ Storage::url(current_organization()->logo_path) }}" alt="Logo" class="h-10 w-10 rounded-lg object-cover shadow-sm ring-1 ring-gray-900/10 dark:ring-white/10">
-                             @else
-                                <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-md">
-                                    {{ substr(current_organization()->name, 0, 1) }}
-                                </div>
-                             @endif
-                             <div class="flex flex-col">
-                                 <span class="font-bold text-lg leading-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                                     {{ current_organization()->name }}
-                                 </span>
-                                 <span class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">Voter Portal</span>
-                             </div>
-                        </a>
-                    </div>
+<body class="h-full font-sans antialiased text-gray-900 dark:text-gray-100">
+    <div x-data="{ sidebarOpen: false }">
+        
+        <!-- Mobile Sidebar (Off-canvas) -->
+        <div x-show="sidebarOpen" class="relative z-50 lg:hidden" role="dialog" aria-modal="true" x-cloak>
+            <div x-show="sidebarOpen" 
+                 x-transition:enter="transition-opacity ease-linear duration-300"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="transition-opacity ease-linear duration-300"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 class="fixed inset-0 bg-gray-900/80" 
+                 @click="sidebarOpen = false"></div>
 
-                    <!-- Right Side Actions -->
-                    <div class="flex items-center gap-4">
-                        <!-- Theme Toggle -->
-                        <button @click="toggleTheme()" class="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500" aria-label="Toggle Dark Mode">
-                            <!-- Sun Icon -->
-                            <svg x-show="!darkMode" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                            </svg>
-                            <!-- Moon Icon -->
-                            <svg x-show="darkMode" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="display: none;">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            <div class="fixed inset-0 flex">
+                <div x-show="sidebarOpen" 
+                     x-transition:enter="transition ease-in-out duration-300 transform"
+                     x-transition:enter-start="-translate-x-full"
+                     x-transition:enter-end="translate-x-0"
+                     x-transition:leave="transition ease-in-out duration-300 transform"
+                     x-transition:leave-start="translate-x-0"
+                     x-transition:leave-end="-translate-x-full"
+                     class="relative mr-16 flex w-full max-w-xs flex-1">
+                    
+                    <div class="absolute left-full top-0 flex w-16 justify-center pt-5">
+                        <button type="button" class="-m-2.5 p-2.5" @click="sidebarOpen = false">
+                            <span class="sr-only">Close sidebar</span>
+                            <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </button>
+                    </div>
 
-                        <!-- User Profile -->
-                        @auth
-                            <div class="relative ml-2" x-data="{ open: false }">
-                                <button @click="open = !open" @click.away="open = false" class="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors focus:outline-none">
-                                    <span class="hidden sm:block text-right">
-                                        <div class="leading-none">{{ auth()->user()->name }}</div>
-                                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-normal">Voter ID: {{ auth()->user()->organizationUser?->voter_id }}</div>
-                                    </span>
-                                    <div class="h-8 w-8 rounded-full bg-gray-200 dark:bg-slate-700 overflow-hidden ring-2 ring-white dark:ring-slate-800 shadow-sm">
-                                        @if(auth()->user()->avatar)
-                                            <img src="{{ auth()->user()->avatar }}" alt="Avatar" class="h-full w-full object-cover">
-                                        @else
-                                            <svg class="h-full w-full text-gray-400 dark:text-gray-500 p-1" fill="currentColor" viewBox="0 0 24 24">
-                                                <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
-                                            </svg>
-                                        @endif
-                                    </div>
-                                    <svg class="w-4 h-4 text-gray-400" :class="{'rotate-180': open}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                </button>
-
-                                <!-- Dropdown Menu -->
-                                <div x-show="open" 
-                                     x-transition:enter="transition ease-out duration-100"
-                                     x-transition:enter-start="transform opacity-0 scale-95"
-                                     x-transition:enter-end="transform opacity-100 scale-100"
-                                     x-transition:leave="transition ease-in duration-75"
-                                     x-transition:leave-start="transform opacity-100 scale-100"
-                                     x-transition:leave-end="transform opacity-0 scale-95"
-                                     class="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white dark:bg-slate-800 ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
-                                     style="display: none;">
-                                    <div class="px-4 py-2 border-b border-gray-100 dark:border-slate-700 pb-2 mb-1 sm:hidden">
-                                        <div class="text-sm font-medium text-gray-900 dark:text-white">{{ auth()->user()->name }}</div>
-                                        <div class="text-xs text-gray-500 dark:text-gray-400">{{ auth()->user()->email }}</div>
-                                    </div>
+                    <!-- Sidebar Content (Mobile) -->
+                    <div class="flex grow flex-col gap-y-5 overflow-y-auto bg-white dark:bg-[#1e293b] px-6 pb-4 ring-1 ring-gray-200 dark:ring-white/10">
+                        <div class="flex h-16 shrink-0 items-center">
+                            @if(current_organization()->logo_path)
+                                <img class="h-8 w-auto" src="{{ Storage::url(current_organization()->logo_path) }}" alt="{{ current_organization()->name }}">
+                            @else
+                                <div class="h-8 w-8 rounded-lg bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white font-bold">
+                                    {{ substr(current_organization()->name, 0, 1) }}
+                                </div>
+                            @endif
+                            <span class="ml-4 text-gray-900 dark:text-white font-semibold truncate">{{ current_organization()->name }}</span>
+                        </div>
+                        <nav class="flex flex-1 flex-col">
+                            <ul role="list" class="flex flex-1 flex-col gap-y-7">
+                                <li>
+                                    <ul role="list" class="-mx-2 space-y-1">
+                                        @include('layouts.partials.voter-nav')
+                                    </ul>
+                                </li>
+                                <li class="mt-auto">
                                     <form method="POST" action="{{ route('logout') }}">
                                         @csrf
-                                        <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
+                                        <button type="submit" class="group -mx-2 flex w-full gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700 hover:text-gray-900 dark:hover:text-white">
+                                            <x-heroicon-o-arrow-right-on-rectangle class="h-6 w-6 shrink-0" />
                                             Sign out
                                         </button>
                                     </form>
-                                </div>
-                            </div>
-                        @endauth
+                                </li>
+                            </ul>
+                        </nav>
                     </div>
                 </div>
             </div>
-        </nav>
+        </div>
 
-        <!-- Main Content -->
-        <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8 transition-colors duration-300">
-            @if(session('error'))
-                <div class="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 p-4 mb-6 rounded-r-lg shadow-sm animate-fade-in-down">
-                    <div class="flex">
-                        <div class="flex-shrink-0">
-                            <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                            </svg>
+        <!-- Static Sidebar (Desktop) -->
+        <div class="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-64 lg:flex-col">
+            <div class="flex grow flex-col gap-y-6 overflow-y-auto bg-white dark:bg-[#1e293b] px-4 pb-4 border-r border-gray-200 dark:border-slate-800">
+                <!-- Logo/Brand Section -->
+                <div class="flex h-20 shrink-0 items-center gap-3 pt-6 px-2">
+                    @if(current_organization()->logo_path)
+                        <img class="h-10 w-10 rounded-lg object-cover ring-2 ring-gray-200 dark:ring-white/10" src="{{ Storage::url(current_organization()->logo_path) }}" alt="{{ current_organization()->name }}">
+                    @else
+                        <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white font-bold text-lg shadow-lg ring-2 ring-gray-200 dark:ring-white/10">
+                            {{ substr(current_organization()->name, 0, 1) }}
                         </div>
-                        <div class="ml-3">
-                            <p class="text-sm text-red-700 dark:text-red-300">{{ session('error') }}</p>
-                        </div>
+                    @endif
+                    <div class="flex flex-col min-w-0">
+                         <span class="text-gray-900 dark:text-white font-bold text-base truncate">{{ current_organization()->name }}</span>
                     </div>
                 </div>
-            @endif
+                
+                <!-- Navigation -->
+                <nav class="flex flex-1 flex-col">
+                    <ul role="list" class="space-y-1">
+                        @include('layouts.partials.voter-nav')
+                    </ul>
+                </nav>
+            </div>
+        </div>
 
-            @if(session('success'))
-                <div class="bg-green-50 dark:bg-green-900/20 border-l-4 border-green-500 p-4 mb-6 rounded-r-lg shadow-sm animate-fade-in-down">
-                    <div class="flex">
-                        <div class="flex-shrink-0">
-                            <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                            </svg>
-                        </div>
-                        <div class="ml-3">
-                            <p class="text-sm text-green-700 dark:text-green-300">{{ session('success') }}</p>
+        <!-- Top Header - Full Width (Outside main content to span entire width) -->
+        <div class="lg:pl-64">
+            <div class="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+                <button type="button" class="-m-2.5 p-2.5 text-gray-700 dark:text-gray-200 lg:hidden" @click="sidebarOpen = true">
+                    <span class="sr-only">Open sidebar</span>
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                    </svg>
+                </button>
+
+                <!-- Separator -->
+                <div class="h-6 w-px bg-gray-200 dark:bg-slate-700 lg:hidden" aria-hidden="true"></div>
+
+                <!-- Left side: Title/Breadcrumb -->
+                <div class="flex items-center gap-2 flex-1">
+                     <span class="font-semibold text-gray-900 dark:text-white lg:hidden">
+                        {{ current_organization()->name }}
+                     </span>
+                </div>
+                
+                <!-- Right side: User info, Voter ID, Theme toggle, Logout -->
+                <div class="flex items-center gap-3">
+                    <!-- User Profile -->
+                    <div class="hidden sm:flex items-center gap-3 px-3 py-1.5 bg-gray-100 dark:bg-slate-800 rounded-lg">
+                        @if(auth()->user()->avatar)
+                            <img class="h-7 w-7 rounded-full object-cover ring-2 ring-white/10" src="{{ auth()->user()->avatar }}" alt="">
+                        @else
+                            <div class="h-7 w-7 rounded-full bg-slate-700 flex items-center justify-center text-white border border-slate-600">
+                                <span class="text-xs font-medium">{{ substr(auth()->user()->name, 0, 1) }}</span>
+                            </div>
+                        @endif
+                        <div class="flex flex-col">
+                            <span class="text-sm font-medium text-gray-900 dark:text-white">{{ auth()->user()->name }}</span>
+                            @if(auth()->user()->voter_id)
+                                <span class="text-xs text-gray-500 dark:text-gray-400">ID: {{ auth()->user()->voter_id }}</span>
+                            @endif
                         </div>
                     </div>
+                    
+                    <!-- Theme Toggle -->
+                    <button @click="toggleTheme()" class="p-2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-all" title="Toggle Theme">
+                        <x-heroicon-o-moon x-show="!darkMode" class="w-5 h-5" />
+                        <x-heroicon-o-sun x-show="darkMode" class="w-5 h-5" style="display:none;" />
+                    </button>
+                    
+                    <!-- Logout Button -->
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="p-2 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition-all" title="Sign out">
+                            <x-heroicon-o-arrow-right-on-rectangle class="w-5 h-5" />
+                        </button>
+                    </form>
                 </div>
-            @endif
+            </div>
 
-            {{ $slot }}
-        </main>
-        
-        <footer class="bg-white dark:bg-slate-950 border-t border-gray-200 dark:border-slate-800 mt-auto transition-colors duration-300">
-             <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 flex flex-col items-center">
-                 <div class="flex items-center gap-2 mb-2 text-gray-500 dark:text-gray-400">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <span class="font-semibold text-sm tracking-wide uppercase">Secure • Anonymous • Verified</span>
-                 </div>
-                <p class="text-center text-sm text-gray-400 dark:text-gray-500">
-                    &copy; {{ date('Y') }} {{ current_organization()->name }}. All rights reserved. 
-                </p>
-             </div>
-        </footer>
+            <!-- Main Content Area -->
+            <main class="py-10">
+                <div class="px-4 sm:px-6 lg:px-8">
+                    @if(session('error'))
+                        <div class="mb-6 rounded-md bg-red-50 dark:bg-red-900/30 p-4">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <x-heroicon-s-x-circle class="h-5 w-5 text-red-400" />
+                                </div>
+                                <div class="ml-3">
+                                    <h3 class="text-sm font-medium text-red-800 dark:text-red-200">Error</h3>
+                                    <div class="mt-2 text-sm text-red-700 dark:text-red-300">
+                                        <p>{{ session('error') }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
+                    @if(session('success'))
+                        <div class="mb-6 rounded-md bg-green-50 dark:bg-green-900/30 p-4">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <x-heroicon-s-check-circle class="h-5 w-5 text-green-400" />
+                                </div>
+                                <div class="ml-3">
+                                    <h3 class="text-sm font-medium text-green-800 dark:text-green-200">Success</h3>
+                                    <div class="mt-2 text-sm text-green-700 dark:text-green-300">
+                                        <p>{{ session('success') }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
+                    {{ $slot }}
+                </div>
+            </main>
+        </div>
     </div>
     @livewireScripts
 </body>

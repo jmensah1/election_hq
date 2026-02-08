@@ -26,21 +26,36 @@ class EditElection extends EditRecord
         ];
     }
 
+    protected array $originalData = [];
+
+    protected function beforeSave(): void
+    {
+        $this->originalData = $this->record->toArray();
+    }
+
     protected function afterSave(): void
     {
         $election = $this->record;
         
-        // Get changed attributes
-        $changes = $election->getChanges();
-        $original = $election->getOriginal();
+        // Get changed attributes by comparing new state with captured original state
+        $newData = $election->toArray();
+        $changes = [];
+        $oldValues = [];
+
+        foreach ($newData as $key => $value) {
+            if (array_key_exists($key, $this->originalData) && $this->originalData[$key] !== $value) {
+                $changes[$key] = $value;
+                $oldValues[$key] = $this->originalData[$key];
+            }
+        }
         
         // Filter out timestamps if desired, but good to keep
         if (!empty($changes)) {
             app(\App\Services\AuditService::class)->log(
-                action: 'election_updated',
+                action: 'Election Updated',
                 entityType: \App\Models\Election::class,
                 entityId: $election->id,
-                oldValues: array_intersect_key($original, $changes),
+                oldValues: $oldValues,
                 newValues: $changes,
                 orgId: $election->organization_id
             );
