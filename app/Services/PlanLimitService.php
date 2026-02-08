@@ -13,13 +13,13 @@ class PlanLimitService
     public const PLANS = [
         'free' => [
             'name' => 'Free',
-            'max_voters' => 50,
+            'max_voters' => 100,
             'max_elections' => 1,
             'storage_limit_mb' => 100,
             'custom_domain' => false,
             'sms_enabled' => false,
             'audit_log_retention_days' => 7,
-            'remove_branding' => false,
+            'remove_branding' => true,
         ],
         'basic' => [
             'name' => 'Basic',
@@ -29,7 +29,7 @@ class PlanLimitService
             'custom_domain' => true,
             'sms_enabled' => false,
             'audit_log_retention_days' => 30,
-            'remove_branding' => false,
+            'remove_branding' => true,
         ],
         'premium' => [
             'name' => 'Premium',
@@ -115,7 +115,9 @@ class PlanLimitService
     public function canUseSMS(Organization $organization): bool
     {
         $limits = $this->getPlanLimits($organization->subscription_plan);
-        return $limits['sms_enabled'] ?? false;
+        $planAllows = $limits['sms_enabled'] ?? false;
+        
+        return $planAllows && $organization->sms_enabled;
     }
 
     /**

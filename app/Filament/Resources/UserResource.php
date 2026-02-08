@@ -39,6 +39,9 @@ class UserResource extends Resource
                     ->email()
                     ->required()
                     ->maxLength(255),
+                Forms\Components\TextInput::make('phone')
+                    ->tel()
+                    ->maxLength(20),
                 Forms\Components\Toggle::make('is_super_admin')
                     ->label('Super Admin'),
                 Forms\Components\TextInput::make('password')

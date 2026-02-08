@@ -25,7 +25,7 @@ class ListVoters extends ListRecords
                 ->icon('heroicon-o-arrow-up-tray')
                 ->form([
                     FileUpload::make('csv_file')
-                        ->label('Upload CSV (Columns: voter_id, email, [role], [department])')
+                        ->label('Upload CSV (Columns: voter_id, email, [phone], [department])')
                         ->disk('public')
                         ->directory('imports')
                         ->preserveFilenames()
@@ -61,15 +61,19 @@ class ListVoters extends ListRecords
         $handle = fopen($file, "r");
         $header = fgetcsv($handle); // Skip header (assuming standard format)
         
-        // Simple mapping: 0=voter_id, 1=email
+        // Simple mapping: 0=voter_id, 1=email, 2=phone, 3=department
         $count = 0;
         $errors = 0;
+        $smsRequiredSkipped = 0;
         $orgId = current_organization_id() ?? auth()->user()->organization_id;
 
         if (!$orgId) {
              Notification::make()->title('No organization context detected')->danger()->send();
              return;
         }
+
+        $org = \App\Models\Organization::find($orgId);
+        $smsEnabled = app(\App\Services\PlanLimitService::class)->canUseSMS($org);
 
         /** @var \App\Services\AuditService $auditService */
         $auditService = app(\App\Services\AuditService::class);
@@ -79,8 +83,16 @@ class ListVoters extends ListRecords
             
             $voterId = trim($data[0]);
             $email = trim($data[1]);
+            $phone = isset($data[2]) ? trim($data[2]) : null;
+            $department = isset($data[3]) ? trim($data[3]) : null;
             
             if (empty($voterId) || empty($email)) continue;
+
+            // Conditional Validation: If SMS is enabled, Phone is required
+            if ($smsEnabled && empty($phone)) {
+                $smsRequiredSkipped++;
+                continue;
+            }
 
             try {
                 $voter = OrganizationUser::where('organization_id', $orgId)
@@ -92,8 +104,8 @@ class ListVoters extends ListRecords
                     $oldValues = $voter->getAttributes();
                     
                     $voter->allowed_email = $email;
-                    // 'role' => 'voter', // Default - usually we don't overwrite role on simple import unless specified
-                    // 'status' => 'pending', // Default - don't reset status if active
+                    if ($phone) $voter->phone = $phone;
+                    if ($department) $voter->department = $department;
                     
                     if ($voter->isDirty()) {
                         $voter->save();
@@ -124,8 +136,10 @@ class ListVoters extends ListRecords
                         'organization_id' => $orgId,
                         'voter_id' => $voterId,
                         'allowed_email' => $email,
-                         'role' => 'voter', 
-                         'status' => 'pending', 
+                        'phone' => $phone,
+                        'department' => $department,
+                        'role' => 'voter', 
+                        'status' => 'pending', 
                     ]);
 
                     $auditService->log(
@@ -148,8 +162,12 @@ class ListVoters extends ListRecords
         // Clean up file
         unlink($file);
         
+        $message = "Imported {$count} voters successfully";
+        if ($errors > 0) $message .= " ({$errors} errors)";
+        if ($smsRequiredSkipped > 0) $message .= " ({$smsRequiredSkipped} skipped: missing phone)";
+        
         Notification::make()
-            ->title("Imported {$count} voters successfully" . ($errors > 0 ? " ({$errors} errors)" : ""))
+            ->title($message)
             ->success()
             ->send();
     }

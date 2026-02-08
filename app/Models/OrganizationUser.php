@@ -18,6 +18,7 @@ class OrganizationUser extends Pivot
         'user_id',
         'voter_id',
         'allowed_email',
+        'phone',
         'role',
         'status',
         'can_vote',
