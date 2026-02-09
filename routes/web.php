@@ -51,5 +51,11 @@ Route::get('/get-started/success', [App\Http\Controllers\OnboardingController::c
 Route::get('/get-started/payment/callback', [App\Http\Controllers\OnboardingController::class, 'paymentCallback'])->name('onboarding.payment.callback');
 Route::get('/get-started/payment/cancelled', [App\Http\Controllers\OnboardingController::class, 'paymentCancelled'])->name('onboarding.payment.cancelled');
 
+// Organization Setup (after payment)
+Route::get('/get-started/setup/{payment}', [App\Http\Controllers\OnboardingController::class, 'setupChoice'])->name('onboarding.setup.choice');
+Route::get('/get-started/setup/{payment}/form', [App\Http\Controllers\OnboardingController::class, 'setupOrganization'])->name('onboarding.setup.form');
+Route::post('/get-started/setup/{payment}', [App\Http\Controllers\OnboardingController::class, 'storeOrganization'])->name('onboarding.setup.store');
+Route::post('/get-started/setup/{payment}/skip', [App\Http\Controllers\OnboardingController::class, 'skipSetup'])->name('onboarding.setup.skip');
+
 // Paystack Webhook (exclude from CSRF verification)
 Route::post('/webhooks/paystack', [App\Http\Controllers\PaystackWebhookController::class, 'handle'])->name('webhooks.paystack');

@@ -3,13 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\Lead;
+use App\Models\Organization;
 use App\Models\Payment;
+use App\Models\User;
 use App\Mail\NewLeadAdminNotification;
 use App\Mail\LeadReceivedConfirmation;
 use App\Services\PaystackService;
+use App\Services\PlanLimitService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class OnboardingController extends Controller
@@ -124,12 +129,8 @@ class OnboardingController extends Controller
         $lead = $payment->lead;
         $lead->update(['status' => 'paid']);
 
-        // Send notifications
-        $this->sendNotifications($lead, $payment);
-
-        return redirect()->route('onboarding.success')
-            ->with('lead', $lead)
-            ->with('payment', $payment);
+        // Redirect to setup choice page
+        return redirect()->route('onboarding.setup.choice', ['payment' => $payment->id]);
     }
 
     public function paymentCancelled()
@@ -140,6 +141,152 @@ class OnboardingController extends Controller
     public function success()
     {
         return view('onboarding.success');
+    }
+
+    /**
+     * Show setup choice page (self-setup or skip).
+     */
+    public function setupChoice(Payment $payment)
+    {
+        // Ensure payment is successful
+        if (!$payment->isSuccessful()) {
+            return redirect()->route('onboarding.payment.cancelled')
+                ->with('error', 'Payment not verified.');
+        }
+
+        return view('onboarding.setup-choice', [
+            'payment' => $payment,
+            'lead' => $payment->lead,
+        ]);
+    }
+
+    /**
+     * Show organization setup form.
+     */
+    public function setupOrganization(Payment $payment)
+    {
+        if (!$payment->isSuccessful()) {
+            return redirect()->route('onboarding.payment.cancelled');
+        }
+
+        $lead = $payment->lead;
+        $timezones = \DateTimeZone::listIdentifiers();
+
+        return view('onboarding.setup-organization', [
+            'payment' => $payment,
+            'lead' => $lead,
+            'timezones' => array_combine($timezones, $timezones),
+            'baseDomain' => parse_url(config('app.url'), PHP_URL_HOST) ?? 'elections-hq.com',
+        ]);
+    }
+
+    /**
+     * Store the organization and create admin user.
+     */
+    public function storeOrganization(Request $request, Payment $payment)
+    {
+        if (!$payment->isSuccessful()) {
+            return redirect()->route('onboarding.payment.cancelled');
+        }
+
+        $lead = $payment->lead;
+
+        $validated = $request->validate([
+            'organization_name' => 'required|string|max:255',
+            'subdomain' => ['required', 'string', 'max:63', 'alpha_dash', 'unique:organizations,subdomain'],
+            'timezone' => 'required|string|timezone',
+            'logo' => 'nullable|image|max:2048',
+            'admin_name' => 'required|string|max:255',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        // Handle logo upload
+        $logoPath = null;
+        if ($request->hasFile('logo')) {
+            $logoPath = $request->file('logo')->store('organizations/logos', 'public');
+        }
+
+        // Get plan limits
+        $planLimitService = app(PlanLimitService::class);
+        $planLimits = $planLimitService->getPlanLimits($lead->plan_tier);
+
+        // Calculate subscription expiry
+        $expiresAt = $lead->billing_cycle === 'annual' 
+            ? now()->addYear() 
+            : now()->addMonth();
+
+        // Create organization
+        $organization = Organization::create([
+            'name' => $validated['organization_name'],
+            'slug' => Str::slug($validated['organization_name']),
+            'subdomain' => strtolower($validated['subdomain']),
+            'timezone' => $validated['timezone'],
+            'logo_path' => $logoPath,
+            'status' => 'active',
+            'subscription_plan' => $lead->plan_tier,
+            'subscription_expires_at' => $expiresAt,
+            'max_voters' => $planLimits['max_voters'] ?? 100,
+            'sms_enabled' => $planLimits['sms_enabled'] ?? false,
+        ]);
+
+        // Find or create admin user
+        $user = User::where('email', $lead->email)->first();
+        
+        if (!$user) {
+            $user = User::create([
+                'name' => $validated['admin_name'],
+                'email' => $lead->email,
+                'phone' => $lead->phone,
+                'password' => Hash::make($validated['password']),
+            ]);
+        } else {
+            // Update existing user's password
+            $user->update([
+                'name' => $validated['admin_name'],
+                'password' => Hash::make($validated['password']),
+            ]);
+        }
+
+        // Attach user as admin
+        $organization->users()->attach($user->id, [
+            'role' => 'admin',
+            'status' => 'active',
+            'can_vote' => true,
+        ]);
+
+        // Update lead status
+        $lead->update(['status' => 'setup_complete']);
+
+        // Send notifications
+        $this->sendNotifications($lead, $payment);
+
+        $baseDomain = parse_url(config('app.url'), PHP_URL_HOST) ?? 'elections-hq.com';
+        $loginUrl = "https://{$organization->subdomain}.{$baseDomain}/admin/login";
+
+        return redirect()->route('onboarding.success')
+            ->with('organization', $organization)
+            ->with('login_url', $loginUrl)
+            ->with('setup_complete', true);
+    }
+
+    /**
+     * Skip self-setup - team will call.
+     */
+    public function skipSetup(Payment $payment)
+    {
+        if (!$payment->isSuccessful()) {
+            return redirect()->route('onboarding.payment.cancelled');
+        }
+
+        $lead = $payment->lead;
+        
+        // Send notifications for manual setup
+        $this->sendNotifications($lead, $payment);
+
+        return redirect()->route('onboarding.success')
+            ->with('lead', $lead)
+            ->with('payment', $payment)
+            ->with('skipped_setup', true);
     }
 
     /**
