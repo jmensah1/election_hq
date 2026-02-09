@@ -48,3 +48,8 @@ Route::middleware(['auth'])->get('/admin/elections/{election}/print', App\Http\C
 Route::get('/get-started', [App\Http\Controllers\OnboardingController::class, 'create'])->name('onboarding.create');
 Route::post('/get-started', [App\Http\Controllers\OnboardingController::class, 'store'])->name('onboarding.store');
 Route::get('/get-started/success', [App\Http\Controllers\OnboardingController::class, 'success'])->name('onboarding.success');
+Route::get('/get-started/payment/callback', [App\Http\Controllers\OnboardingController::class, 'paymentCallback'])->name('onboarding.payment.callback');
+Route::get('/get-started/payment/cancelled', [App\Http\Controllers\OnboardingController::class, 'paymentCancelled'])->name('onboarding.payment.cancelled');
+
+// Paystack Webhook (exclude from CSRF verification)
+Route::post('/webhooks/paystack', [App\Http\Controllers\PaystackWebhookController::class, 'handle'])->name('webhooks.paystack');

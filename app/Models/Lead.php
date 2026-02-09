@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Lead extends Model
 {
@@ -24,4 +26,28 @@ class Lead extends Model
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    /**
+     * Get all payments for the lead.
+     */
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    /**
+     * Get the latest payment for the lead.
+     */
+    public function latestPayment(): HasOne
+    {
+        return $this->hasOne(Payment::class)->latestOfMany();
+    }
+
+    /**
+     * Check if lead has a successful payment.
+     */
+    public function hasPaid(): bool
+    {
+        return $this->payments()->where('status', 'success')->exists();
+    }
 }

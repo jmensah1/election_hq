@@ -18,6 +18,11 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\SetOrganizationTimezone::class,
         ]);
 
+        // Exclude Paystack webhook from CSRF verification
+        $middleware->validateCsrfTokens(except: [
+            'webhooks/paystack',
+        ]);
+
         $middleware->redirectGuestsTo(function (\Illuminate\Http\Request $request) {
             if ($request->is('admin/*') || $request->is('*/admin/*')) {
                 return route('filament.admin.auth.login');
