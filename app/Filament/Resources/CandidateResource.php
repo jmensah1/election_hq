@@ -109,7 +109,38 @@ class CandidateResource extends Resource
                     ->image()
                     ->disk('public')
                     ->directory('candidates/photos')
-                    ->visibility('public'),
+                    ->visibility('public')
+                    ->rules([
+                        function () {
+                            return function (string $attribute, $value, \Closure $fail) {
+                                if (!$value instanceof \Illuminate\Http\UploadedFile) {
+                                    return;
+                                }
+
+                                $organizationId = function_exists('current_organization_id') && current_organization_id()
+                                    ? current_organization_id()
+                                    : request()->input('organization_id');
+
+                                if (!$organizationId) {
+                                    // Fallback for form access where organization_id might be set differently or not yet available
+                                    // In a real scenario, you might need to fetch it from the record if editing
+                                    return;
+                                }
+
+                                $organization = \App\Models\Organization::find($organizationId);
+                                if (!$organization) {
+                                    return;
+                                }
+
+                                $planService = app(\App\Services\PlanLimitService::class);
+                                
+                                // Check if adding this file exceeds the limit
+                                if (!$planService->canUploadFile($organization, $value->getSize())) {
+                                    $fail("Storage limit reached. Upgrade your plan to upload more files.");
+                                }
+                            };
+                        },
+                    ]),
                 
                 Forms\Components\Select::make('nomination_status')
                     ->options([

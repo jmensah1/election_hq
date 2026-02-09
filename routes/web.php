@@ -8,6 +8,8 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::post('/contact', [App\Http\Controllers\ContactController::class, 'store'])->name('contact.store');
+
  
 
 // 2. Create a dedicated login route that shows the login page
@@ -41,3 +43,8 @@ Route::middleware(['auth'])->prefix('vote')->name('voter.')->group(function () {
 
 // Admin Print Route
 Route::middleware(['auth'])->get('/admin/elections/{election}/print', App\Http\Controllers\Admin\PrintElectionResultsController::class)->name('admin.elections.print');
+
+// Onboarding Flow
+Route::get('/get-started', [App\Http\Controllers\OnboardingController::class, 'create'])->name('onboarding.create');
+Route::post('/get-started', [App\Http\Controllers\OnboardingController::class, 'store'])->name('onboarding.store');
+Route::get('/get-started/success', [App\Http\Controllers\OnboardingController::class, 'success'])->name('onboarding.success');

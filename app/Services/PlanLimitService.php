@@ -136,4 +136,49 @@ class PlanLimitService
             default => "This feature is not available on your current plan.",
         };
     }
+    /**
+     * Get the total storage used by the organization in bytes.
+     */
+    public function getUsedStorage(Organization $organization): int
+    {
+        // Recursively get all files in the organization's directory
+        // Assuming files are stored in 'public/{organization_id}' or similar
+        // Adjust path based on your actual storage structure
+        $directory = 'public/' . $organization->id;
+        
+        if (!\Illuminate\Support\Facades\Storage::exists($directory)) {
+            return 0;
+        }
+
+        $allFiles = \Illuminate\Support\Facades\Storage::allFiles($directory);
+        $totalSize = 0;
+
+        foreach ($allFiles as $file) {
+            $totalSize += \Illuminate\Support\Facades\Storage::size($file);
+        }
+
+        return $totalSize;
+    }
+
+    /**
+     * Check if the organization can upload a file of the given size.
+     * 
+     * @param Organization $organization
+     * @param int $fileSizeInBytes
+     * @return bool
+     */
+    public function canUploadFile(Organization $organization, int $fileSizeInBytes): bool
+    {
+        $limits = $this->getPlanLimits($organization->subscription_plan);
+        $limitMb = $limits['storage_limit_mb'];
+
+        if ($limitMb === -1) {
+            return true;
+        }
+
+        $currentUsage = $this->getUsedStorage($organization);
+        $limitBytes = $limitMb * 1024 * 1024;
+
+        return ($currentUsage + $fileSizeInBytes) <= $limitBytes;
+    }
 }
