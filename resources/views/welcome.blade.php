@@ -288,9 +288,18 @@
                         <div class="p-8 rounded-2xl bg-slate-900/50 backdrop-blur-sm border border-slate-800 hover:border-slate-600 transition-all flex flex-col">
                             <div class="mb-4">
                                 <h3 class="text-lg font-semibold text-white">New</h3>
-                                <div class="mt-2 flex items-baseline gap-1">
-                                    <span class="text-4xl font-bold text-white">₵100</span>
-                                    <span class="text-sm text-slate-500">/month</span>
+                                <div class="mt-2">
+                                    <div class="flex items-baseline gap-1 monthly-price">
+                                        <span class="text-4xl font-bold text-white">₵100</span>
+                                        <span class="text-sm text-slate-500">/mo</span>
+                                    </div>
+                                    <div class="hidden items-baseline gap-1 annual-price">
+                                        <span class="text-4xl font-bold text-white">₵85</span>
+                                        <span class="text-sm text-slate-500">/mo</span>
+                                    </div>
+                                    <div class="hidden mt-1 annual-price">
+                                        <span class="text-xs text-amber-400">₵1,020 billed annually</span>
+                                    </div>
                                 </div>
                             </div>
                             <ul class="space-y-3 mb-8 flex-1 text-sm text-slate-300">
@@ -319,7 +328,7 @@
                                     <span>SMS Notifications</span>
                                 </li>
                             </ul>
-                            <a href="{{ route('onboarding.create', ['plan' => 'new']) }}" class="w-full py-2 px-4 rounded-lg border border-slate-700 hover:bg-slate-800 text-white font-medium text-center transition-colors">
+                            <a href="{{ route('onboarding.create', ['plan' => 'new']) }}" class="plan-link w-full py-2 px-4 rounded-lg border border-slate-700 hover:bg-slate-800 text-white font-medium text-center transition-colors">
                                 Get Started
                             </a>
                         </div>
