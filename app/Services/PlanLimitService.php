@@ -58,7 +58,7 @@ class PlanLimitService
      */
     public function getPlanLimits(string $plan): array
     {
-        return self::PLANS[$plan] ?? self::PLANS['free'];
+        return self::PLANS[$plan] ?? self::PLANS['new'];
     }
 
     /**
