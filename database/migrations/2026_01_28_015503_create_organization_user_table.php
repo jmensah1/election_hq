@@ -16,6 +16,7 @@ return new class extends Migration
             // Admin Uploaded Data
             $table->string('voter_id', 50);
             $table->string('allowed_email');
+            $table->string('phone')->nullable()->after('allowed_email');
             
             $table->enum('role', ['admin', 'election_officer', 'voter'])->default('voter');
             $table->enum('status', ['pending', 'active', 'suspended'])->default('pending');

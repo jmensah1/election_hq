@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('phone');
             $table->string('organization_name');
             $table->string('plan_tier'); // new, basic, premium, enterprise
+            $table->string('billing_cycle')->default('monthly')->after('plan_tier'); // monthly, annual
             $table->text('message')->nullable();
             $table->string('status')->default('new');
             $table->string('ip_address')->nullable();
