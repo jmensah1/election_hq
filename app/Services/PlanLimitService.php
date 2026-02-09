@@ -11,11 +11,11 @@ class PlanLimitService
      * -1 indicates unlimited.
      */
     public const PLANS = [
-        'free' => [
-            'name' => 'Free',
-            'max_voters' => 100,
+        'new' => [
+            'name' => 'New',
+            'max_voters' => 300,
             'max_elections' => 1,
-            'storage_limit_mb' => 100,
+            'storage_limit_mb' => 500,
             'custom_domain' => false,
             'sms_enabled' => false,
             'audit_log_retention_days' => 7,

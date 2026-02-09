@@ -76,6 +76,16 @@
 </head>
 <body class="antialiased bg-slate-950 text-slate-200 font-sans selection:bg-amber-500 selection:text-white flex flex-col min-h-screen">
 
+    <!-- Global Background Effects -->
+    <div class="fixed inset-0 z-0 pointer-events-none">
+        <div class="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-[128px]"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[128px]"></div>
+        <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-amber-600/10 rounded-full blur-[128px]"></div>
+        <div class="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150"></div>
+        <!-- Grid Pattern -->
+        <div class="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+    </div>
+
     <!-- Navigation -->
     <nav class="fixed w-full z-50 transition-all duration-300 bg-slate-950/80 backdrop-blur-md border-b border-white/5">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -93,19 +103,26 @@
                     @endif
                 </div>
 
-                <!-- Auth Links -->
-                <div class="flex items-center gap-4">
-                    @if (Route::has('login'))
-                        @auth
-                            <a href="{{ route('voter.elections.index') }}" class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Voting Portal</a>
-                            <a href="{{ route('candidate.portal') }}" class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Candidate Portal</a>
-                        @else
-                            <a href="{{ route('auth.google') }}" class="group relative px-6 py-2.5 bg-white text-slate-900 font-semibold text-sm rounded-full transition-all hover:bg-amber-50 hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-white">
-                                <span class="flex items-center gap-2">
-                                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-                                </span>
-                            </a>
-                        @endauth
+                <!-- Auth Links / Navigation -->
+                <div class="flex items-center gap-6">
+                    @if($organization)
+                        <!-- Tenant Subdomain: Portal Access -->
+                        @if (Route::has('login'))
+                            @auth
+                                <a href="{{ route('voter.elections.index') }}" class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Voting Portal</a>
+                                <a href="{{ route('candidate.portal') }}" class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Candidate Portal</a>
+                            @else
+                                <a href="{{ route('auth.google') }}" class="group relative px-6 py-2.5 bg-white text-slate-900 font-semibold text-sm rounded-full transition-all hover:bg-amber-50 hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-white">
+                                    <span class="flex items-center gap-2">
+                                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                                    </span>
+                                </a>
+                            @endauth
+                        @endif
+                    @else
+                        <!-- Main Domain: Marketing Navigation -->
+                        <a href="#pricing" class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Pricing</a>
+                        <a href="mailto:sales@electionshq.com" class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Contact Us</a>
                     @endif
                 </div>
             </div>
@@ -114,15 +131,6 @@
 
     <!-- Hero Section -->
     <div class="relative flex-grow flex items-center justify-center overflow-hidden pt-20">
-        <!-- Background Effects -->
-        <div class="absolute inset-0 z-0">
-            <div class="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-[128px]"></div>
-            <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-amber-600/10 rounded-full blur-[128px]"></div>
-            <div class="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150"></div>
-            <!-- Grid Pattern -->
-            <div class="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-        </div>
-
         <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             @if($organization)
                 <!-- Vendor-specific welcome -->
@@ -157,23 +165,27 @@
             @endif
 
             <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                @auth
-                    <a href="{{ route('voter.elections.index') }}" class="px-8 py-4 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-lg transition-all transform hover:scale-105 shadow-[0_0_40px_rgba(245,158,11,0.4)]">
-                        Go to Voting Portal
-                    </a>
-                    <a href="{{ route('candidate.portal') }}" class="px-8 py-4 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-lg transition-all transform hover:scale-105 border border-slate-700">
-                        Candidate Portal
-                    </a>
+                @if($organization)
+                    @auth
+                        <a href="{{ route('voter.elections.index') }}" class="px-8 py-4 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-lg transition-all transform hover:scale-105 shadow-[0_0_40px_rgba(245,158,11,0.4)]">
+                            Go to Voting Portal
+                        </a>
+                        <a href="{{ route('candidate.portal') }}" class="px-8 py-4 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-lg transition-all transform hover:scale-105 border border-slate-700">
+                            Candidate Portal
+                        </a>
+                    @else
+                        <a href="{{ route('auth.google') }}" class="px-8 py-4 bg-white text-slate-900 font-bold rounded-lg transition-all transform hover:scale-105 hover:bg-slate-100 shadow-xl">
+                            Access Voter Portal
+                        </a>
+                    @endauth
                 @else
-                    <a href="{{ route('auth.google') }}" class="px-8 py-4 bg-white text-slate-900 font-bold rounded-lg transition-all transform hover:scale-105 hover:bg-slate-100 shadow-xl">
-                        Access Voter Portal
+                    <a href="#pricing" class="px-8 py-4 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-lg transition-all transform hover:scale-105 shadow-[0_0_40px_rgba(245,158,11,0.4)]">
+                        View Pricing
                     </a>
-                @endauth
-                @unless($organization)
                     <a href="#features" class="px-8 py-4 bg-slate-800/50 hover:bg-slate-800 text-white font-semibold rounded-lg border border-slate-700 backdrop-blur-sm transition-all hover:border-slate-500">
                         Learn How it Works
                     </a>
-                @endunless
+                @endif
             </div>
 
             @unless($organization)
@@ -202,8 +214,9 @@
 
     @unless($organization)
         <!-- Features Section - Only on main landing page -->
-        <div id="features" class="py-24 bg-slate-900 relative">
+        <div id="features" class="py-24 relative z-10">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <!-- ... existing features content ... -->
                 <div class="text-center mb-16">
                     <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Enterprise-Grade Integrity</h2>
                     <p class="text-slate-400 max-w-2xl mx-auto">
@@ -213,7 +226,7 @@
 
                 <div class="grid md:grid-cols-3 gap-8">
                     <!-- Feature 1 -->
-                    <div class="p-8 rounded-2xl bg-slate-950 border border-slate-800 hover:border-amber-500/30 transition-all hover:bg-slate-900/80 group">
+                    <div class="p-8 rounded-2xl bg-slate-900/50 backdrop-blur-sm border border-slate-800 hover:border-amber-500/30 transition-all hover:bg-slate-900/80 group">
                         <div class="w-12 h-12 bg-slate-900 rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform ring-1 ring-slate-800 group-hover:ring-amber-500/50">
                             <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                         </div>
@@ -224,7 +237,7 @@
                     </div>
 
                     <!-- Feature 2 -->
-                    <div class="p-8 rounded-2xl bg-slate-950 border border-slate-800 hover:border-blue-500/30 transition-all hover:bg-slate-900/80 group">
+                    <div class="p-8 rounded-2xl bg-slate-900/50 backdrop-blur-sm border border-slate-800 hover:border-blue-500/30 transition-all hover:bg-slate-900/80 group">
                         <div class="w-12 h-12 bg-slate-900 rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform ring-1 ring-slate-800 group-hover:ring-blue-500/50">
                             <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                         </div>
@@ -235,7 +248,7 @@
                     </div>
 
                     <!-- Feature 3 -->
-                    <div class="p-8 rounded-2xl bg-slate-950 border border-slate-800 hover:border-green-500/30 transition-all hover:bg-slate-900/80 group">
+                    <div class="p-8 rounded-2xl bg-slate-900/50 backdrop-blur-sm border border-slate-800 hover:border-green-500/30 transition-all hover:bg-slate-900/80 group">
                         <div class="w-12 h-12 bg-slate-900 rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform ring-1 ring-slate-800 group-hover:ring-green-500/50">
                             <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
                         </div>
@@ -247,10 +260,275 @@
                 </div>
             </div>
         </div>
-    @endunless
+
+        <!-- Pricing Section -->
+            <div id="pricing" class="py-24 relative z-10">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="text-center mb-16">
+                        <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Simple, Transparent Pricing</h2>
+                        <p class="text-slate-400 max-w-2xl mx-auto">
+                            Choose the plan that fits your organization's size and needs. No hidden fees.
+                        </p>
+                        
+                        <!-- Billing Toggle -->
+                        <div class="mt-8 flex items-center justify-center gap-3">
+                            <span class="text-slate-400 text-sm font-medium" id="monthly-label">Monthly</span>
+                            <button type="button" onclick="toggleBilling()" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-slate-700 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-slate-950" role="switch" aria-checked="false" id="billing-toggle">
+                                <span class="sr-only">Use annual billing</span>
+                                <span aria-hidden="true" class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-0" id="toggle-button"></span>
+                            </button>
+                            <span class="text-amber-400 text-sm font-medium" id="annual-label">
+                                Annual <span class="inline-block px-2 py-0.5 text-xs bg-amber-500/20 text-amber-300 rounded-full ml-1">Save 15%</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="grid md:grid-cols-4 gap-6">
+                        <!-- New Plan -->
+                        <div class="p-8 rounded-2xl bg-slate-900/50 backdrop-blur-sm border border-slate-800 hover:border-slate-600 transition-all flex flex-col">
+                            <div class="mb-4">
+                                <h3 class="text-lg font-semibold text-white">New</h3>
+                                <div class="mt-2 flex items-baseline gap-1">
+                                    <span class="text-4xl font-bold text-white">₵100</span>
+                                    <span class="text-sm text-slate-500">/month</span>
+                                </div>
+                            </div>
+                            <ul class="space-y-3 mb-8 flex-1 text-sm text-slate-300">
+                                <li class="flex gap-2">
+                                    <svg class="w-5 h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    <span>Up to 300 Voters</span>
+                                </li>
+                                <li class="flex gap-2">
+                                    <svg class="w-5 h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    <span>1 Active Election</span>
+                                </li>
+                                <li class="flex gap-2">
+                                    <svg class="w-5 h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    <span>100 MB Storage</span>
+                                </li>
+                                <li class="flex gap-2">
+                                    <svg class="w-5 h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    <span>7-Day Audit Logs</span>
+                                </li>
+                                <li class="flex gap-2 text-slate-500">
+                                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    <span>Custom Domain</span>
+                                </li>
+                                <li class="flex gap-2 text-slate-500">
+                                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    <span>SMS Notifications</span>
+                                </li>
+                            </ul>
+                            <a href="{{ route('filament.admin.auth.login') }}" class="w-full py-2 px-4 rounded-lg border border-slate-700 hover:bg-slate-800 text-white font-medium text-center transition-colors">
+                                Get Started
+                            </a>
+                        </div>
+
+                        <!-- Basic Plan -->
+                        <div class="p-8 rounded-2xl bg-slate-900/50 backdrop-blur-sm border border-slate-800 hover:border-amber-500/50 transition-all flex flex-col relative overflow-hidden">
+                            <div class="mb-4">
+                                <h3 class="text-lg font-semibold text-white">Basic</h3>
+                                <div class="mt-2">
+                                    <div class="flex items-baseline gap-1 monthly-price">
+                                        <span class="text-4xl font-bold text-white">₵180</span>
+                                        <span class="text-sm text-slate-500">/mo</span>
+                                    </div>
+                                    <div class="hidden items-baseline gap-1 annual-price">
+                                        <span class="text-4xl font-bold text-white">₵153</span>
+                                        <span class="text-sm text-slate-500">/mo</span>
+                                    </div>
+                                    <div class="hidden mt-1 annual-price">
+                                        <span class="text-xs text-amber-400">₵1,836 billed annually</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <ul class="space-y-3 mb-8 flex-1 text-sm text-slate-300">
+                                <li class="flex gap-2">
+                                    <svg class="w-5 h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    <span>Up to 500 Voters</span>
+                                </li>
+                                <li class="flex gap-2">
+                                    <svg class="w-5 h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    <span>3 Active Elections</span>
+                                </li>
+                                <li class="flex gap-2">
+                                    <svg class="w-5 h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    <span>1 GB Storage</span>
+                                </li>
+                                <li class="flex gap-2">
+                                    <svg class="w-5 h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    <span>Custom Domain</span>
+                                </li>
+                                <li class="flex gap-2">
+                                    <svg class="w-5 h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    <span>30-Day Audit Logs</span>
+                                </li>
+                                <li class="flex gap-2 text-slate-500">
+                                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    <span>SMS Notifications</span>
+                                </li>
+                            </ul>
+                            <a href="{{ route('filament.admin.auth.login') }}" class="w-full py-2 px-4 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-medium text-center transition-colors">
+                                Choose Basic
+                            </a>
+                        </div>
+
+                        <!-- Premium Plan -->
+                        <div class="p-8 rounded-2xl bg-slate-900/80 backdrop-blur-md border-2 border-amber-500/50 shadow-2xl shadow-amber-900/10 flex flex-col relative transform scale-105 z-10">
+                            <div class="absolute top-0 right-0 bg-amber-500 text-slate-950 text-xs font-bold px-3 py-1 rounded-bl-lg">POPULAR</div>
+                            <div class="mb-4">
+                                <h3 class="text-lg font-semibold text-white">Premium</h3>
+                                <div class="mt-2">
+                                    <div class="flex items-baseline gap-1 monthly-price">
+                                        <span class="text-4xl font-bold text-white">₵550</span>
+                                        <span class="text-sm text-slate-500">/mo</span>
+                                    </div>
+                                    <div class="hidden items-baseline gap-1 annual-price">
+                                        <span class="text-4xl font-bold text-white">₵468</span>
+                                        <span class="text-sm text-slate-500">/mo</span>
+                                    </div>
+                                    <div class="hidden mt-1 annual-price">
+                                        <span class="text-xs text-amber-400">₵5,610 billed annually</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <ul class="space-y-3 mb-8 flex-1 text-sm text-slate-300">
+                                <li class="flex gap-2">
+                                    <svg class="w-5 h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    <span>Up to 2,000 Voters</span>
+                                </li>
+                                <li class="flex gap-2">
+                                    <svg class="w-5 h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    <span>Unlimited Elections</span>
+                                </li>
+                                <li class="flex gap-2">
+                                    <svg class="w-5 h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    <span>10 GB Storage</span>
+                                </li>
+                                <li class="flex gap-2">
+                                    <svg class="w-5 h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    <span>Custom Domain</span>
+                                </li>
+                                <li class="flex gap-2">
+                                    <svg class="w-5 h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    <span>SMS Notifications</span>
+                                </li>
+                                <li class="flex gap-2">
+                                    <svg class="w-5 h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    <span>1-Year Audit Logs</span>
+                                </li>
+                            </ul>
+                            <a href="{{ route('filament.admin.auth.login') }}" class="w-full py-2 px-4 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-center transition-colors">
+                                Choose Premium
+                            </a>
+                        </div>
+
+                        <!-- Enterprise Plan -->
+                        <div class="p-8 rounded-2xl bg-slate-900/50 backdrop-blur-sm border border-slate-800 hover:border-slate-600 transition-all flex flex-col">
+                            <div class="mb-4">
+                                <h3 class="text-lg font-semibold text-white">Enterprise</h3>
+                                <div class="mt-2">
+                                    <div class="flex items-baseline gap-1 monthly-price">
+                                        <span class="text-4xl font-bold text-white">₵1,800</span>
+                                        <span class="text-sm text-slate-500">/mo</span>
+                                    </div>
+                                    <div class="hidden items-baseline gap-1 annual-price">
+                                        <span class="text-4xl font-bold text-white">₵1,530</span>
+                                        <span class="text-sm text-slate-500">/mo</span>
+                                    </div>
+                                    <div class="hidden mt-1 annual-price">
+                                        <span class="text-xs text-amber-400">₵18,360 billed annually</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <ul class="space-y-3 mb-8 flex-1 text-sm text-slate-300">
+                                <li class="flex gap-2">
+                                    <svg class="w-5 h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    <span>Unlimited Voters</span>
+                                </li>
+                                <li class="flex gap-2">
+                                    <svg class="w-5 h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    <span>Unlimited Elections</span>
+                                </li>
+                                <li class="flex gap-2">
+                                    <svg class="w-5 h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    <span>Unlimited Storage</span>
+                                </li>
+                                <li class="flex gap-2">
+                                    <svg class="w-5 h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    <span>Dedicated Support</span>
+                                </li>
+                                <li class="flex gap-2">
+                                    <svg class="w-5 h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    <span>Unlimited Audit Logs</span>
+                                </li>
+                                <li class="flex gap-2">
+                                    <svg class="w-5 h-5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    <span>Priority Onboarding</span>
+                                </li>
+                            </ul>
+                            <a href="mailto:sales@electionshq.com" class="w-full py-2 px-4 rounded-lg border border-slate-700 hover:bg-slate-800 text-white font-medium text-center transition-colors">
+                                Contact Sales
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Trust Badge -->
+                    <div class="mt-12 text-center">
+                        <p class="text-sm text-slate-400">All plans include end-to-end encryption, Google SSO, and real-time results</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pricing Toggle Script -->
+            <script>
+                function toggleBilling() {
+                    const toggle = document.getElementById('billing-toggle');
+                    const toggleButton = document.getElementById('toggle-button');
+                    const monthlyPrices = document.querySelectorAll('.monthly-price');
+                    const annualPrices = document.querySelectorAll('.annual-price');
+                    
+                    const isAnnual = toggle.getAttribute('aria-checked') === 'true';
+                    
+                    if (isAnnual) {
+                        // Switch to monthly
+                        toggle.setAttribute('aria-checked', 'false');
+                        toggle.classList.remove('bg-amber-500');
+                        toggle.classList.add('bg-slate-700');
+                        toggleButton.classList.remove('translate-x-5');
+                        toggleButton.classList.add('translate-x-0');
+                        
+                        monthlyPrices.forEach(el => {
+                            el.classList.remove('hidden');
+                            el.classList.add('flex');
+                        });
+                        annualPrices.forEach(el => {
+                            el.classList.add('hidden');
+                            el.classList.remove('flex');
+                        });
+                    } else {
+                        // Switch to annual
+                        toggle.setAttribute('aria-checked', 'true');
+                        toggle.classList.remove('bg-slate-700');
+                        toggle.classList.add('bg-amber-500');
+                        toggleButton.classList.remove('translate-x-0');
+                        toggleButton.classList.add('translate-x-5');
+                        
+                        monthlyPrices.forEach(el => {
+                            el.classList.add('hidden');
+                            el.classList.remove('flex');
+                        });
+                        annualPrices.forEach(el => {
+                            el.classList.remove('hidden');
+                            el.classList.add('flex');
+                        });
+                    }
+                }
+            </script>
+        @endunless
 
     <!-- Footer -->
-    <footer class="bg-slate-950 border-t border-slate-900 py-12">
+    <footer class="bg-slate-950/80 backdrop-blur-sm border-t border-slate-800 py-12 relative z-10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center">
             <div class="flex items-center gap-2 mb-4 md:mb-0">
                 @if($logoUrl)
