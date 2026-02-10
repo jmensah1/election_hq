@@ -23,6 +23,7 @@ class Election extends Model
         'voting_end_date',
         'status',
         'require_photo',
+        'self_nomination_enabled',
         'max_votes_per_position',
         'voter_eligibility_rules',
         'results_published',
@@ -38,6 +39,7 @@ class Election extends Model
         'voting_start_date' => 'datetime',
         'voting_end_date' => 'datetime',
         'require_photo' => 'boolean',
+        'self_nomination_enabled' => 'boolean',
         'voter_eligibility_rules' => 'array',
         'results_published' => 'boolean',
         'results_published_at' => 'datetime',
@@ -79,6 +81,14 @@ class Election extends Model
 
         $now = now();
         return $now->gte($this->nomination_start_date) && $now->lte($this->nomination_end_date);
+    }
+
+    /**
+     * Check if self-nomination is currently allowed.
+     */
+    public function isSelfNominationOpen(): bool
+    {
+        return $this->self_nomination_enabled && $this->isNominationOpen();
     }
 
     /**

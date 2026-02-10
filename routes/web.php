@@ -34,6 +34,9 @@ if (app()->isLocal()) {
 // Candidate Portal
 Route::middleware(['auth', 'web'])->get('/candidate-portal', App\Livewire\CandidatePortal::class)->name('candidate.portal');
 
+// Self-Nomination Portal
+Route::middleware(['auth', 'web'])->get('/self-nominate', App\Livewire\SelfNomination::class)->name('self.nominate');
+
 // Voter Dashboard
 Route::middleware(['auth'])->prefix('vote')->name('voter.')->group(function () {
     Route::get('/elections', [App\Http\Controllers\Voter\VotingController::class, 'index'])->name('elections.index');

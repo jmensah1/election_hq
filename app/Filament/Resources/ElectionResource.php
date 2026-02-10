@@ -82,6 +82,10 @@ class ElectionResource extends Resource
                     Forms\Components\Section::make('Settings')
                     ->schema([
                         Forms\Components\Toggle::make('require_photo'),
+                        Forms\Components\Toggle::make('self_nomination_enabled')
+                            ->label('Open Self-Nomination')
+                            ->helperText('Allow voters to nominate themselves as candidates during the nomination period.')
+                            ->default(false),
                     ])->columns(2),
                     
                  Forms\Components\Hidden::make('created_by')
