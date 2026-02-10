@@ -27,7 +27,7 @@ class CandidateInvitation extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Candidate Nomination Invitation: ' . $this->candidate->election->title,
+            subject: 'Official Nomination Notice – ' . $this->candidate->election->title . ': ' . $this->candidate->position->name,
         );
     }
 
@@ -38,6 +38,9 @@ class CandidateInvitation extends Mailable
     {
         return new Content(
             view: 'emails.candidate-invitation',
+            with: [
+                'name' => $this->candidate->user->name ?? 'Candidate',
+            ],
         );
     }
 
