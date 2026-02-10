@@ -14,7 +14,7 @@ return new class extends Migration
             $table->foreignId('user_id')->nullable()->constrained()->cascadeOnDelete(); // Nullable until first login
             
             // Admin Uploaded Data
-            $table->string('voter_id', 50);
+            $table->string('voter_id', 50)->nullable();
             $table->string('allowed_email');
             $table->string('phone')->nullable()->after('allowed_email');
             

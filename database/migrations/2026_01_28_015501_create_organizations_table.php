@@ -19,7 +19,7 @@ return new class extends Migration
             $table->enum('status', ['active', 'suspended', 'inactive'])->default('active');
             
             // Subscription
-            $table->enum('subscription_plan', ['free', 'basic', 'premium', 'enterprise'])->default('free');
+            $table->enum('subscription_plan', ['new', 'basic', 'premium', 'enterprise'])->default('new');
             $table->timestamp('subscription_expires_at')->nullable();
             
             // Features

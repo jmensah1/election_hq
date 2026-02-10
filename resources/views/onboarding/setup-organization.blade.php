@@ -127,7 +127,47 @@
                                        required>
                             </div>
                         </div>
+
+                        <!-- Voting Option -->
+                        <div class="mt-6 pt-6 border-t border-slate-700">
+                            <div class="flex items-start">
+                                <div class="flex h-5 items-center">
+                                    <input id="will_vote" name="will_vote" type="checkbox" value="1" 
+                                           class="h-4 w-4 rounded border-slate-700 bg-slate-800 text-amber-500 focus:ring-amber-500"
+                                           onchange="toggleVoterId()">
+                                </div>
+                                <div class="ml-3 text-sm">
+                                    <label for="will_vote" class="font-medium text-slate-300">I will be voting in elections</label>
+                                    <p class="text-slate-500">Check this if you want to cast votes as an admin.</p>
+                                </div>
+                            </div>
+
+                            <div id="voter_id_container" class="mt-4 hidden">
+                                <label for="voter_id" class="block text-sm font-medium text-slate-300">Voter ID</label>
+                                <input type="text" name="voter_id" id="voter_id" 
+                                       class="mt-1 block w-full rounded-md border border-slate-700 bg-slate-800 text-white px-3 py-2 placeholder-slate-500 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                                       placeholder="e.g. EMP-001">
+                                <p class="mt-1 text-xs text-slate-500">Unique identifier for voting (e.g., Staff ID, Membership No).</p>
+                            </div>
+                        </div>
                     </div>
+
+                    <script>
+                        function toggleVoterId() {
+                            const checkbox = document.getElementById('will_vote');
+                            const container = document.getElementById('voter_id_container');
+                            const input = document.getElementById('voter_id');
+                            
+                            if (checkbox.checked) {
+                                container.classList.remove('hidden');
+                                input.required = true;
+                            } else {
+                                container.classList.add('hidden');
+                                input.required = false;
+                                input.value = '';
+                            }
+                        }
+                    </script>
 
                     <div class="pt-4">
                         <button type="submit" 

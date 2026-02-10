@@ -198,7 +198,16 @@ class OnboardingController extends Controller
             'logo' => 'nullable|image|max:2048',
             'admin_name' => 'required|string|max:255',
             'password' => 'required|string|min:8|confirmed',
+            'will_vote' => 'nullable|boolean',
+            'voter_id' => 'required_if:will_vote,1|nullable|string|max:50',
         ]);
+
+        // Check uniqueness of voter_id if provided
+        if (!empty($validated['voter_id'])) {
+            // We can't use standard unique rule easily because organization doesn't exist yet,
+            // but since it's a new organization, there are no other users in it yet.
+            // So practically, this first user's ID is always unique for this organization.
+        }
 
         // Handle logo upload
         $logoPath = null;
@@ -248,10 +257,15 @@ class OnboardingController extends Controller
         }
 
         // Attach user as admin
+        $canVote = !empty($validated['will_vote']) && $validated['will_vote'] == 1;
+        $voterId = $canVote ? $validated['voter_id'] : null;
+
         $organization->users()->attach($user->id, [
             'role' => 'admin',
             'status' => 'active',
-            'can_vote' => true,
+            'can_vote' => $canVote,
+            'voter_id' => $voterId,
+            'allowed_email' => $user->email,
         ]);
 
         // Update lead status
