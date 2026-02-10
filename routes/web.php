@@ -14,6 +14,9 @@ Route::post('/contact', [App\Http\Controllers\ContactController::class, 'store']
 
 // 2. Create a dedicated login route that shows the login page
 Route::get('/login', function () {
+    if (! current_organization()) {
+        return redirect('/');
+    }
     return view('auth.login');
 })->name('login');
 
