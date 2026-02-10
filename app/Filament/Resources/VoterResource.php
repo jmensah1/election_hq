@@ -141,9 +141,9 @@ class VoterResource extends Resource
                     ->action(function () {
                         return response()->streamDownload(function () {
                             $handle = fopen('php://output', 'w');
-                            fputcsv($handle, ['voter_id', 'allowed_email', 'department', 'role', 'status']);
-                            fputcsv($handle, ['101010', 'john.doe@example.com', 'Computer Science', 'voter', 'active']);
-                            fputcsv($handle, ['102020', 'jane.doe@example.com', 'Engineering', 'voter', 'pending']);
+                            fputcsv($handle, ['voter_id', 'allowed_email', 'department', 'role']);
+                            fputcsv($handle, ['101010', 'john.doe@example.com', 'Computer Science', 'voter']);
+                            fputcsv($handle, ['102020', 'jane.doe@example.com', 'Engineering', 'voter']);
                             fclose($handle);
                         }, 'voters_import_template.csv', [
                             'Content-Type' => 'text/csv',

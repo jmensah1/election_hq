@@ -72,11 +72,6 @@ class PositionResource extends Resource
                     
                 Forms\Components\Toggle::make('is_active')
                     ->default(true),
-
-                Forms\Components\Toggle::make('is_yes_no_vote')
-                    ->label('Yes/No Vote')
-                    ->helperText('Enable this for positions with only one candidate. Voters will vote Yes or No instead of selecting a candidate.')
-                    ->default(false),
             ]);
     }
 
