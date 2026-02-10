@@ -339,8 +339,8 @@
                                     <span>SMS Notifications</span>
                                 </li>
                             </ul>
-                            <a href="{{ route('onboarding.create', ['plan' => 'new']) }}" class="plan-link w-full py-2 px-4 rounded-lg border border-slate-700 hover:bg-slate-800 text-white font-medium text-center transition-colors">
-                                Get Started
+                            <a href="{{ route('onboarding.create', ['plan' => 'new']) }}" class="w-full py-2 px-4 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-medium text-center transition-colors">
+                                Choose New
                             </a>
                         </div>
 
@@ -487,8 +487,8 @@
                                     <span>Priority Onboarding</span>
                                 </li>
                             </ul>
-                            <a href="{{ route('onboarding.create', ['plan' => 'enterprise']) }}" class="w-full py-2 px-4 rounded-lg border border-slate-700 hover:bg-slate-800 text-white font-medium text-center transition-colors">
-                                Contact Sales
+                            <a href="{{ route('onboarding.create', ['plan' => 'enterprise']) }}" class="w-full py-2 px-4 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-medium text-center transition-colors">
+                                Choose Enterprise
                             </a>
                         </div>
                     </div>
