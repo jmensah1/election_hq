@@ -266,5 +266,6 @@
         </div>
     </div>
     @livewireScripts
+    @include('partials.tawk-to')
 </body>
 </html>

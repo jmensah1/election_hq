@@ -672,5 +672,6 @@
         </div>
     </footer>
 
+    @include('partials.tawk-to')
 </body>
 </html>

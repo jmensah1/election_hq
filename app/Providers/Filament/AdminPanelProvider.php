@@ -59,6 +59,10 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
+            ->renderHook(
+                'panels::body.end',
+                fn (): string => view('partials.tawk-to'),
+            )
             ->navigationItems([
                 \Filament\Navigation\NavigationItem::make('Horizon')
                     ->url('/horizon', shouldOpenInNewTab: true)
