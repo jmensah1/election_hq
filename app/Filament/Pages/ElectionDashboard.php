@@ -238,14 +238,25 @@ class ElectionDashboard extends Page implements HasForms
 
         return $positions->map(function ($position) use ($canShowResults) {
             $totalVotes = $position->candidates->sum('vote_count');
+            $candidates = $position->candidates->values(); // Ensure zero-indexed keys
             
             return [
                 'id' => $position->id,
                 'name' => $position->name,
                 'totalVotes' => $totalVotes,
-                'candidates' => $position->candidates->map(function ($candidate, $index) use ($totalVotes, $canShowResults) {
+                'candidates' => $candidates->map(function ($candidate, $index) use ($totalVotes, $canShowResults, $candidates) {
                     $percentage = $totalVotes > 0 ? round(($candidate->vote_count / $totalVotes) * 100, 1) : 0;
                     
+                    // Calculate rank with tie handling (Standard Competition Ranking)
+                    $rank = $index + 1;
+                    if ($canShowResults && $index > 0 && $candidate->vote_count === $candidates[$index - 1]->vote_count) {
+                        // Find the index of the first candidate with the same vote count
+                        $firstTieIndex = $candidates->search(fn($c) => $c->vote_count === $candidate->vote_count);
+                        if ($firstTieIndex !== false) {
+                            $rank = $firstTieIndex + 1;
+                        }
+                    }
+
                     return [
                         'id' => $candidate->id,
                         'name' => $candidate->user?->name ?? $candidate->email,
@@ -253,7 +264,7 @@ class ElectionDashboard extends Page implements HasForms
                         'votes' => $canShowResults ? $candidate->vote_count : null,
                         'percentage' => $canShowResults ? $percentage : null,
                         'isWinner' => $candidate->is_winner,
-                        'rank' => $index + 1,
+                        'rank' => $rank,
                     ];
                 })->toArray(),
             ];

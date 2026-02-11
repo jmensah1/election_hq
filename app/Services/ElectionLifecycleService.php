@@ -63,11 +63,14 @@ class ElectionLifecycleService
 
         $election->update(['status' => $newStatus]);
         
-        // Potential side effects:
-        // switch($newStatus) {
-        //    case 'voting': NotificationService::notifyVotersStart($election); break;
-        //    case 'completed': ResultsService::determineWinners($election); break;
-        // }
+        switch($newStatus) {
+            case 'voting': 
+                // NotificationService::notifyVotersStart($election); 
+                break;
+            case 'completed': 
+                app(\App\Services\ResultsService::class)->determineWinners($election); 
+                break;
+        }
         
         return true;
     }
