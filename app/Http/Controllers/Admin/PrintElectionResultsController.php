@@ -11,12 +11,12 @@ class PrintElectionResultsController extends Controller
     public function __invoke(Request $request, Election $election)
     {
         // Permission check
-        if (!auth()->user()->is_super_admin && !auth()->user()->can('manage', $election)) {
+        if (!auth()->user()?->is_super_admin && !auth()->user()->can('manage', $election)) {
             abort(403);
         }
 
         // Only allow printing if completed or results published, unless super admin
-        if (!$election->results_published && $election->status !== 'completed' && !auth()->user()->is_super_admin) {
+        if (!$election->results_published && $election->status !== 'completed' && !auth()->user()?->is_super_admin) {
              abort(403, 'Results are not yet published.');
         }
 

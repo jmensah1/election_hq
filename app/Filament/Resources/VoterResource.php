@@ -17,7 +17,7 @@ class VoterResource extends Resource
     {
         $query = parent::getEloquentQuery();
 
-        if (!auth()->user()->is_super_admin && function_exists('current_organization_id') && current_organization_id()) {
+        if (!auth()->user()?->is_super_admin && function_exists('current_organization_id') && current_organization_id()) {
             $query->where('organization_id', current_organization_id());
         }
 

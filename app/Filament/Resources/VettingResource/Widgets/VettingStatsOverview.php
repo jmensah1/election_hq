@@ -27,7 +27,7 @@ class VettingStatsOverview extends BaseWidget
 
         if ($electionId) {
             $query->where('election_id', $electionId);
-        } elseif (!auth()->user()->is_super_admin && function_exists('current_organization_id') && current_organization_id()) {
+        } elseif (!auth()->user()?->is_super_admin && function_exists('current_organization_id') && current_organization_id()) {
             $query->where('organization_id', current_organization_id());
         }
 
