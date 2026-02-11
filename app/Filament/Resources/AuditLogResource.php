@@ -9,12 +9,21 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class AuditLogResource extends Resource
 {
     public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
     {
         $query = parent::getEloquentQuery();
+
+        if (! Auth::check()) {
+            Auth::logout();
+            session()->invalidate();
+            session()->regenerateToken();
+            redirect('/admin/login')->send();
+            exit;
+        }
 
         if (auth()->user()->is_super_admin) {
             return parent::getEloquentQuery()->withoutGlobalScopes();
@@ -36,6 +45,10 @@ class AuditLogResource extends Resource
     // Read-only resource
     public static function shouldRegisterNavigation(): bool
     {
+        if (! auth()->check()) {
+            return false;
+        }
+
         return auth()->user()->is_super_admin;
     }
 

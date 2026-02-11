@@ -10,6 +10,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 
 class LeadResource extends Resource
 {
@@ -25,7 +26,15 @@ class LeadResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->is_super_admin;
+        if (! Auth::check()) {
+            Auth::logout();
+            session()->invalidate();
+            session()->regenerateToken();
+            redirect('/admin/login')->send();
+            exit;
+        }
+        
+        return Auth::user()->is_super_admin;
     }
 
     public static function form(Form $form): Form

@@ -9,6 +9,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class UserResource extends Resource
 {
@@ -20,11 +21,27 @@ class UserResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->is_super_admin;
+        if (! Auth::check()) {
+            Auth::logout();
+            session()->invalidate();
+            session()->regenerateToken();
+            redirect('/admin/login')->send();
+            exit;
+        }
+
+        return Auth::user()->is_super_admin;
     }
 
     public static function canCreate(): bool
     {
+        if (! Auth::check()) {
+            Auth::logout();
+            session()->invalidate();
+            session()->regenerateToken();
+            redirect('/admin/login')->send();
+            exit;
+        }
+
         return auth()->user()->is_super_admin;
     }
 

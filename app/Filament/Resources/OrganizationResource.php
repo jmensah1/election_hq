@@ -20,11 +20,27 @@ class OrganizationResource extends Resource
 
     public static function canViewAny(): bool
     {
+        if (! auth()->check()) {
+            auth()->logout();
+            session()->invalidate();
+            session()->regenerateToken();
+            redirect('/admin/login')->send();
+            exit;
+        }
+
         return auth()->user()->is_super_admin;
     }
 
     public static function canCreate(): bool
     {
+        if (! auth()->check()) {
+            auth()->logout();
+            session()->invalidate();
+            session()->regenerateToken();
+            redirect('/admin/login')->send();
+            exit;
+        }
+
         return auth()->user()->is_super_admin;
     }
 
