@@ -22,7 +22,7 @@
 </p>
 
 <div style="text-align: center; margin: 30px 0;">
-    <a href="{{ route('voter.dashboard') }}" style="display: inline-block; background-color: #2563eb; color: #ffffff; font-weight: bold; padding: 12px 24px; border-radius: 6px; text-decoration: none;">
+    <a href="{{ route('voter.elections.index') }}" style="display: inline-block; background-color: #2563eb; color: #ffffff; font-weight: bold; padding: 12px 24px; border-radius: 6px; text-decoration: none;">
         Go to Voter Dashboard
     </a>
 </div>
