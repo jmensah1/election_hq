@@ -215,27 +215,48 @@ class ElectionDashboard extends Page implements HasForms
 
         // Only show results if voting has ended or results are published
         $canShowResults = $this->election->results_published || 
-                          $this->election->status === 'completed' ||
-                          ($this->election->status === 'voting' && auth()->user()?->is_super_admin);
+                          $this->election->status === 'completed';
+                        //    ||
+                        //   ($this->election->status === 'voting' && auth()->user()?->is_super_admin);
 
         $positions = $this->election->positions()
-            ->with(['candidates' => function ($query) {
-                $query->where('vetting_status', 'passed')
-                      ->orderByDesc('vote_count');
+            ->with(['candidates' => function ($query) use ($canShowResults) {
+                $query->where('vetting_status', 'passed');
+                
+                // If results are public or election completed, sort by votes
+                if ($canShowResults) {
+                    $query->orderByDesc('vote_count');
+                } else {
+                    // Otherwise sort by ballot order (asc) or ID (asc)
+                    $query->orderBy('ballot_order')
+                          ->orderBy('display_order', 'asc') // Create fallback if ballot_order is null
+                          ->orderBy('created_at');
+                }
             }])
             ->orderBy('display_order')
             ->get();
 
         return $positions->map(function ($position) use ($canShowResults) {
             $totalVotes = $position->candidates->sum('vote_count');
+            $candidates = $position->candidates->values(); // Ensure zero-indexed keys
             
             return [
                 'id' => $position->id,
                 'name' => $position->name,
                 'totalVotes' => $totalVotes,
-                'candidates' => $position->candidates->map(function ($candidate, $index) use ($totalVotes, $canShowResults) {
+                'candidates' => $candidates->map(function ($candidate, $index) use ($totalVotes, $canShowResults, $candidates) {
                     $percentage = $totalVotes > 0 ? round(($candidate->vote_count / $totalVotes) * 100, 1) : 0;
                     
+                    // Calculate rank with tie handling (Standard Competition Ranking)
+                    $rank = $index + 1;
+                    if ($canShowResults && $index > 0 && $candidate->vote_count === $candidates[$index - 1]->vote_count) {
+                        // Find the index of the first candidate with the same vote count
+                        $firstTieIndex = $candidates->search(fn($c) => $c->vote_count === $candidate->vote_count);
+                        if ($firstTieIndex !== false) {
+                            $rank = $firstTieIndex + 1;
+                        }
+                    }
+
                     return [
                         'id' => $candidate->id,
                         'name' => $candidate->user?->name ?? $candidate->email,
@@ -243,7 +264,7 @@ class ElectionDashboard extends Page implements HasForms
                         'votes' => $canShowResults ? $candidate->vote_count : null,
                         'percentage' => $canShowResults ? $percentage : null,
                         'isWinner' => $candidate->is_winner,
-                        'rank' => $index + 1,
+                        'rank' => $rank,
                     ];
                 })->toArray(),
             ];
@@ -268,7 +289,7 @@ class ElectionDashboard extends Page implements HasForms
 
         $activity = VoteConfirmation::where('election_id', $this->election->id)
             ->where('voted_at', '>=', $startTime)
-            ->selectRaw("$dateFormat as hour, COUNT(*) as count")
+            ->selectRaw("$dateFormat as hour, COUNT(DISTINCT user_id) as count")
             ->groupBy('hour')
             ->orderBy('hour')
             ->pluck('count', 'hour')

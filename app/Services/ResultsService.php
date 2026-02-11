@@ -82,19 +82,33 @@ class ResultsService
              // Let's assume Top 1 for now unless position has `seats` concept. 
              // MVP: 1 winner per position.
 
+            // Get vote counts for all candidates in this position
             $results = Vote::where('position_id', $position->id)
                 ->select('candidate_id', DB::raw('count(*) as total_votes'))
                 ->groupBy('candidate_id')
                 ->orderByDesc('total_votes')
-                ->limit($maxWinners) // Assuming 1 winner
                 ->get();
 
             // Reset previous winners
             $position->candidates()->update(['is_winner' => false]);
 
-            foreach ($results as $result) {
+            if ($results->isEmpty()) {
+                continue;
+            }
+
+            // Determine the highest vote count
+            $maxVotes = $results->first()->total_votes;
+            
+            // Allow for a "Draw" - if multiple candidates have maxVotes, they are all winners
+            // This is "First Past The Post" but handles ties by declaring multiple winners (no run-off logic yet)
+            $winnerIds = $results->filter(function ($result) use ($maxVotes) {
+                return $result->total_votes == $maxVotes;
+            })->pluck('candidate_id');
+
+            // Mark winners
+            if ($winnerIds->isNotEmpty()) {
                 $position->candidates()
-                    ->where('id', $result->candidate_id)
+                    ->whereIn('id', $winnerIds)
                     ->update(['is_winner' => true]);
             }
         }

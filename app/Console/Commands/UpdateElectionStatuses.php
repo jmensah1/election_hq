@@ -25,9 +25,13 @@ class UpdateElectionStatuses extends Command
             $newStatus = $this->determineStatus($election, $now);
 
             if ($newStatus && $newStatus !== $oldStatus) {
-                $election->update(['status' => $newStatus]);
-                $transitioned++;
-                $this->info("Election '{$election->title}' transitioned: {$oldStatus} → {$newStatus}");
+                try {
+                    app(\App\Services\ElectionLifecycleService::class)->transitionStatus($election, $newStatus);
+                    $transitioned++;
+                    $this->info("Election '{$election->title}' transitioned: {$oldStatus} → {$newStatus}");
+                } catch (\Exception $e) {
+                    $this->error("Failed to transition election '{$election->title}': " . $e->getMessage());
+                }
             }
         }
 

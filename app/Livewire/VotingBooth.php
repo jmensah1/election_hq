@@ -24,7 +24,9 @@ class VotingBooth extends Component
         $this->positions = $election->positions()
             ->with(['candidates' => function ($query) {
                 $query->where('nomination_status', 'approved')
-                      ->where('vetting_status', 'passed');
+                      ->where('vetting_status', 'passed')
+                      ->orderBy('ballot_order')
+                      ->orderBy('id');
             }, 'candidates.user'])
             ->orderBy('display_order')
             ->get();

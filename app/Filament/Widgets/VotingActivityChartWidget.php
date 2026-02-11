@@ -44,7 +44,7 @@ class VotingActivityChartWidget extends ChartWidget
         };
         
         $votes = $query
-            ->selectRaw("$dateFormat as hour, COUNT(*) as count")
+            ->selectRaw("$dateFormat as hour, COUNT(DISTINCT user_id) as count")
             ->groupBy('hour')
             ->orderBy('hour')
             ->pluck('count', 'hour')
