@@ -126,4 +126,26 @@ class ElectionLifecycleTest extends TestCase
         // Let's verify the candidate status didn't change
         $this->assertEquals('pending_submission', $candidate->fresh()->nomination_status);
     }
+
+    public function test_election_skips_multiple_states_when_catching_up()
+    {
+        // Create an election in draft status but with dates that have already passed
+        // This simulates an election that was created late or dates were changed
+        $election = Election::factory()->create([
+            'status' => 'draft',
+            'nomination_start_date' => now()->subDays(10),
+            'nomination_end_date' => now()->subDays(8),
+            'vetting_start_date' => now()->subDays(8),
+            'vetting_end_date' => now()->subDays(6),
+            'voting_start_date' => now()->subDays(6),
+            'voting_end_date' => now()->subDays(2),
+        ]);
+
+        // The command should transition through all intermediate states to reach 'completed'
+        $this->artisan('elections:update-statuses')
+            ->assertSuccessful();
+
+        // Election should now be completed, having transitioned through all states
+        $this->assertEquals('completed', $election->fresh()->status);
+    }
 }
