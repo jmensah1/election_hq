@@ -59,8 +59,8 @@ class VoterResource extends Resource
                     ->tel()
                     ->maxLength(20)
                     ->label('Phone Number')
-                    ->required(fn () => function_exists('current_organization') && app(\App\Services\PlanLimitService::class)->canUseSMS(current_organization()))
-                    ->helperText(fn () => function_exists('current_organization') && app(\App\Services\PlanLimitService::class)->canUseSMS(current_organization()) ? 'Required because SMS is enabled for this organization.' : 'Optional (SMS disabled).'),
+                    ->required(fn () => function_exists('current_organization') && current_organization() && app(\App\Services\PlanLimitService::class)->canUseSMS(current_organization()))
+                    ->helperText(fn () => function_exists('current_organization') && current_organization() && app(\App\Services\PlanLimitService::class)->canUseSMS(current_organization()) ? 'Required because SMS is enabled for this organization.' : 'Optional (SMS disabled).'),
                 
                 Forms\Components\Select::make('role')
                     ->options([
