@@ -56,13 +56,6 @@ class AdminPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
-            ->authMiddleware([
-                Authenticate::class,
-            ])
-            ->renderHook(
-                'panels::body.end',
-                fn (): string => view('partials.tawk-to'),
-            )
             ->navigationItems([
                 \Filament\Navigation\NavigationItem::make('Horizon')
                     ->url('/horizon', shouldOpenInNewTab: true)
