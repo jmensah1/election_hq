@@ -228,8 +228,8 @@ class ElectionDashboard extends Page implements HasForms
                     $query->orderByDesc('vote_count');
                 } else {
                     // Otherwise sort by ballot order (asc) or ID (asc)
-                    $query->orderBy('ballot_order')
-                          ->orderBy('display_order', 'asc') // Create fallback if ballot_order is null
+                    $query->reorder()
+                          ->orderBy('ballot_order')
                           ->orderBy('created_at');
                 }
             }])
