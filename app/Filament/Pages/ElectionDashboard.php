@@ -240,6 +240,7 @@ class ElectionDashboard extends Page implements HasForms
             $totalVotes = $position->candidates->sum('vote_count');
             $candidates = $position->candidates->values(); // Ensure zero-indexed keys
             
+            
             return [
                 'id' => $position->id,
                 'name' => $position->name,
