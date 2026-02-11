@@ -75,13 +75,6 @@ class ResultsService
         $positions = $election->positions;
 
         foreach ($positions as $position) {
-            $maxWinners = $position->max_candidates ?? 1; // e.g., 1 for President, 2 for Senators? Usually 1 winner per "seat"
-             // Wait, max_candidates usually limits nominations. Winners depends on 'max_votes' or is just 1?
-             // Architecture doc says "max_votes_per_position" (user choice limit). 
-             // Usually it's "First Past The Post". 
-             // Let's assume Top 1 for now unless position has `seats` concept. 
-             // MVP: 1 winner per position.
-
             // Get vote counts for all candidates in this position
             $results = Vote::where('position_id', $position->id)
                 ->select('candidate_id', DB::raw('count(*) as total_votes'))

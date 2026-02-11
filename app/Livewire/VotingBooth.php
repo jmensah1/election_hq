@@ -25,7 +25,8 @@ class VotingBooth extends Component
             ->with(['candidates' => function ($query) {
                 $query->where('nomination_status', 'approved')
                       ->where('vetting_status', 'passed')
-                      ->orderBy('ballot_order')
+                      ->orderByRaw('CASE WHEN ballot_order IS NULL THEN 1 ELSE 0 END')
+                      ->orderBy('ballot_order', 'asc')
                       ->orderBy('id');
             }, 'candidates.user'])
             ->orderBy('display_order')

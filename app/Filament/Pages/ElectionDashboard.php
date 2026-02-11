@@ -216,8 +216,6 @@ class ElectionDashboard extends Page implements HasForms
         // Only show results if voting has ended or results are published
         $canShowResults = $this->election->results_published || 
                           $this->election->status === 'completed';
-                        //    ||
-                        //   ($this->election->status === 'voting' && auth()->user()?->is_super_admin);
 
         $positions = $this->election->positions()
             ->with(['candidates' => function ($query) use ($canShowResults) {
@@ -227,9 +225,9 @@ class ElectionDashboard extends Page implements HasForms
                 if ($canShowResults) {
                     $query->orderByDesc('vote_count');
                 } else {
-                    // Otherwise sort by ballot order (asc) or ID (asc)
-                    $query->orderBy('ballot_order')
-                          ->orderBy('display_order', 'asc') // Create fallback if ballot_order is null
+                    // Otherwise sort by ballot order (asc), with NULLs last, then by creation time
+                    $query->orderByRaw('CASE WHEN ballot_order IS NULL THEN 1 ELSE 0 END')
+                          ->orderBy('ballot_order', 'asc')
                           ->orderBy('created_at');
                 }
             }])

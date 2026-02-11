@@ -22,13 +22,14 @@ class UpdateElectionStatuses extends Command
 
         foreach ($elections as $election) {
             $oldStatus = $election->status;
-            $newStatus = $this->determineStatus($election, $now);
+            $targetStatus = $this->determineStatus($election, $now);
 
-            if ($newStatus && $newStatus !== $oldStatus) {
+            if ($targetStatus && $targetStatus !== $oldStatus) {
                 try {
-                    app(\App\Services\ElectionLifecycleService::class)->transitionStatus($election, $newStatus);
+                    // Transition step-by-step through allowed states to reach target
+                    $this->transitionToTargetStatus($election, $oldStatus, $targetStatus);
                     $transitioned++;
-                    $this->info("Election '{$election->title}' transitioned: {$oldStatus} → {$newStatus}");
+                    $this->info("Election '{$election->title}' transitioned: {$oldStatus} → {$targetStatus}");
                 } catch (\Exception $e) {
                     $this->error("Failed to transition election '{$election->title}': " . $e->getMessage());
                 }
@@ -38,6 +39,30 @@ class UpdateElectionStatuses extends Command
         $this->info("Checked " . $elections->count() . " elections, transitioned {$transitioned}.");
         
         return Command::SUCCESS;
+    }
+
+    protected function transitionToTargetStatus(Election $election, string $currentStatus, string $targetStatus): void
+    {
+        // Define the ordered state progression
+        $stateOrder = ['draft', 'nomination', 'vetting', 'voting', 'completed'];
+        
+        $currentIndex = array_search($currentStatus, $stateOrder);
+        $targetIndex = array_search($targetStatus, $stateOrder);
+        
+        if ($currentIndex === false || $targetIndex === false) {
+            throw new \Exception("Invalid status transition");
+        }
+        
+        // If we need to skip states, transition through each intermediate state
+        if ($targetIndex > $currentIndex) {
+            $lifecycleService = app(\App\Services\ElectionLifecycleService::class);
+            
+            for ($i = $currentIndex + 1; $i <= $targetIndex; $i++) {
+                $nextStatus = $stateOrder[$i];
+                $lifecycleService->transitionStatus($election, $nextStatus);
+                $election->refresh();
+            }
+        }
     }
 
     protected function determineStatus(Election $election, Carbon $now): ?string

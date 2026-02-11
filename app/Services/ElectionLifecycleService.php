@@ -61,17 +61,20 @@ class ElectionLifecycleService
              throw new InvalidArgumentException("Invalid transition from $currentStatus to $newStatus");
         }
 
-        $election->update(['status' => $newStatus]);
-        
-        switch($newStatus) {
-            case 'voting': 
-                // NotificationService::notifyVotersStart($election); 
-                break;
-            case 'completed': 
-                app(\App\Services\ResultsService::class)->determineWinners($election); 
-                break;
-        }
-        
-        return true;
+        // Wrap status update and side effects in a transaction for atomicity
+        return \DB::transaction(function () use ($election, $newStatus) {
+            $election->update(['status' => $newStatus]);
+            
+            switch($newStatus) {
+                case 'voting': 
+                    // NotificationService::notifyVotersStart($election); 
+                    break;
+                case 'completed': 
+                    app(\App\Services\ResultsService::class)->determineWinners($election); 
+                    break;
+            }
+            
+            return true;
+        });
     }
 }
