@@ -99,8 +99,12 @@ class CandidateResource extends Resource
                     ->dehydrated(false) 
                     ->hiddenOn('create'), 
                     
-                Forms\Components\TextInput::make('candidate_number')
-                    ->maxLength(20),
+                Forms\Components\TextInput::make('ballot_order')
+                    ->label('Ballot Order')
+                    ->numeric()
+                    ->helperText('Lower numbers appear first on the ballot. Leave empty for default ordering.')
+                    ->minValue(1)
+                    ->maxValue(100),
                 
                 Forms\Components\Textarea::make('manifesto')
                     ->columnSpanFull(),
@@ -205,7 +209,7 @@ class CandidateResource extends Resource
                             // Header row
                             fputcsv($handle, [
                                 'ID', 'Name', 'Email', 'Election', 'Position', 
-                                'Candidate Number', 'Nomination Status', 'Vetting Status', 
+                                'Ballot Order', 'Nomination Status', 'Vetting Status', 
                                 'Vote Count', 'Is Winner', 'Created At'
                             ]);
                             
@@ -218,7 +222,7 @@ class CandidateResource extends Resource
                                         $candidate->email,
                                         $candidate->election?->title ?? 'N/A',
                                         $candidate->position?->name ?? 'N/A',
-                                        $candidate->candidate_number,
+                                        $candidate->ballot_order,
                                         $candidate->nomination_status,
                                         $candidate->vetting_status,
                                         $candidate->vote_count,
@@ -241,7 +245,7 @@ class CandidateResource extends Resource
                             foreach ($records as $record) {
                                 app(\App\Services\AuditService::class)->log(
                                     action: 'candidate_deleted',
-                                    entityType: \App\Models\Candidate::class,
+                                    entityType: Candidate::class,
                                     entityId: $record->id,
                                     oldValues: $record->toArray(),
                                     orgId: $record->organization_id
