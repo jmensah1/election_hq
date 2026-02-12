@@ -21,7 +21,6 @@ class ElectionPolicy
         }
 
         // 2. Check if user is allowed to vote (can_vote flag in pivot)
-        // Accessing pivot data: $user->organizations->find($election->organization_id)->pivot->can_vote
         $membership = $user->organizations->find($election->organization_id);
         
         if (!$membership || !$membership->pivot->can_vote) {

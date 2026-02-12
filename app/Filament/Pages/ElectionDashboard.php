@@ -236,38 +236,70 @@ class ElectionDashboard extends Page implements HasForms
             ->orderBy('display_order')
             ->get();
 
-        return $positions->map(function ($position) use ($canShowResults) {
+        $positionIds = $positions->pluck('id');
+
+        $noVoteCounts = Vote::whereIn('position_id', $positionIds)
+            ->where('is_no_vote', true)
+            ->selectRaw('position_id, count(*) as aggregate')
+            ->groupBy('position_id')
+            ->pluck('aggregate', 'position_id');
+
+        return $positions->map(function ($position) use ($canShowResults, $noVoteCounts) {
             $totalVotes = $position->candidates->sum('vote_count');
+            
+            // Calculate No votes if applicable
+            $noVotesCount = 0;
+            if ($position->is_yes_no_vote) {
+                 $noVotesCount = (int) ($noVoteCounts[$position->id] ?? 0);
+                $totalVotes += $noVotesCount;
+            }
+
             $candidates = $position->candidates->values(); // Ensure zero-indexed keys
             
-            
+            $results = $candidates->map(function ($candidate, $index) use ($totalVotes, $canShowResults, $candidates) {
+                $percentage = $totalVotes > 0 ? round(($candidate->vote_count / $totalVotes) * 100, 1) : 0;
+                
+                // Calculate rank with tie handling (Standard Competition Ranking)
+                $rank = $index + 1;
+                if ($canShowResults && $index > 0 && $candidate->vote_count === $candidates[$index - 1]->vote_count) {
+                    // Find the index of the first candidate with the same vote count
+                    $firstTieIndex = $candidates->search(fn($c) => $c->vote_count === $candidate->vote_count);
+                    if ($firstTieIndex !== false) {
+                        $rank = $firstTieIndex + 1;
+                    }
+                }
+
+                return [
+                    'id' => $candidate->id,
+                    'name' => $candidate->user?->name ?? $candidate->email,
+                    'photo' => $candidate->photo_path ? asset('storage/' . $candidate->photo_path) : null,
+                    'votes' => $canShowResults ? $candidate->vote_count : null,
+                    'percentage' => $canShowResults ? $percentage : null,
+                    'isWinner' => $candidate->is_winner,
+                    'rank' => $rank,
+                ];
+            })->toArray();
+
+            // Append "No" option if applicable
+            if ($position->is_yes_no_vote && $canShowResults) {
+                $percentage = $totalVotes > 0 ? round(($noVotesCount / $totalVotes) * 100, 1) : 0;
+                $results[] = [
+                    'id' => 'no-vote-' . $position->id,
+                    'name' => 'No',
+                    'photo' => null, // Or a specific "No" icon if available
+                    'votes' => $noVotesCount,
+                    'percentage' => $percentage,
+                    'isWinner' => false, // Logic for "No" winning?
+                    'rank' => count($results) + 1,
+                    'isNoVote' => true, // Flag for styling
+                ];
+            }
+
             return [
                 'id' => $position->id,
                 'name' => $position->name,
                 'totalVotes' => $totalVotes,
-                'candidates' => $candidates->map(function ($candidate, $index) use ($totalVotes, $canShowResults, $candidates) {
-                    $percentage = $totalVotes > 0 ? round(($candidate->vote_count / $totalVotes) * 100, 1) : 0;
-                    
-                    // Calculate rank with tie handling (Standard Competition Ranking)
-                    $rank = $index + 1;
-                    if ($canShowResults && $index > 0 && $candidate->vote_count === $candidates[$index - 1]->vote_count) {
-                        // Find the index of the first candidate with the same vote count
-                        $firstTieIndex = $candidates->search(fn($c) => $c->vote_count === $candidate->vote_count);
-                        if ($firstTieIndex !== false) {
-                            $rank = $firstTieIndex + 1;
-                        }
-                    }
-
-                    return [
-                        'id' => $candidate->id,
-                        'name' => $candidate->user?->name ?? $candidate->email,
-                        'photo' => $candidate->photo_path ? asset('storage/' . $candidate->photo_path) : null,
-                        'votes' => $canShowResults ? $candidate->vote_count : null,
-                        'percentage' => $canShowResults ? $percentage : null,
-                        'isWinner' => $candidate->is_winner,
-                        'rank' => $rank,
-                    ];
-                })->toArray(),
+                'candidates' => $results,
             ];
         })->toArray();
     }

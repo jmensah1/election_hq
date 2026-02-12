@@ -84,9 +84,8 @@ class ResultsService
 
             // Get vote counts for all candidates in this position
             $results = Vote::where('position_id', $position->id)
-                ->select('candidate_id', DB::raw('count(*) as total_votes'))
-                ->groupBy('candidate_id')
-                ->orderByDesc('total_votes')
+                ->select('candidate_id', 'is_no_vote', DB::raw('count(*) as total_votes'))
+                ->groupBy('candidate_id', 'is_no_vote')
                 ->get();
 
             // Reset previous winners
@@ -96,20 +95,42 @@ class ResultsService
                 continue;
             }
 
-            // Determine the highest vote count
-            $maxVotes = $results->first()->total_votes;
-            
-            // Allow for a "Draw" - if multiple candidates have maxVotes, they are all winners
-            // This is "First Past The Post" but handles ties by declaring multiple winners (no run-off logic yet)
-            $winnerIds = $results->filter(function ($result) use ($maxVotes) {
-                return $result->total_votes == $maxVotes;
-            })->pluck('candidate_id');
+            if ($position->is_yes_no_vote) {
+                // Yes/No Logic
+                // We assume 1 candidate for Yes/No (the subject)
+                $candidateId = $results->first()->candidate_id;
+                
+                $yesVotes = $results->where('is_no_vote', false)->sum('total_votes');
+                $noVotes = $results->where('is_no_vote', true)->sum('total_votes');
 
-            // Mark winners
-            if ($winnerIds->isNotEmpty()) {
-                $position->candidates()
-                    ->whereIn('id', $winnerIds)
-                    ->update(['is_winner' => true]);
+                if ($yesVotes > $noVotes) {
+                    $position->candidates()
+                        ->where('id', $candidateId)
+                        ->update(['is_winner' => true]);
+                }
+                // If No >= Yes, nobody wins (conceptually "No" wins, but candidate is not winner)
+            } else {
+                // Regular Election Logic (First Past The Post)
+                $candidatesVotes = $results->groupBy('candidate_id')->map(function ($rows) {
+                    return $rows->sum('total_votes');
+                });
+
+                if ($candidatesVotes->isEmpty()) {
+                    continue;
+                }
+
+                $maxVotes = $candidatesVotes->max();
+
+                // Allow for ties
+                $winnerIds = $candidatesVotes->filter(function ($votes) use ($maxVotes) {
+                    return $votes == $maxVotes;
+                })->keys();
+
+                if ($winnerIds->isNotEmpty()) {
+                    $position->candidates()
+                        ->whereIn('id', $winnerIds)
+                        ->update(['is_winner' => true]);
+                }
             }
         }
     }

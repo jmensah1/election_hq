@@ -11,7 +11,7 @@
             max-width: 1000px;
             margin: 0 auto;
             padding: 40px;
-            background-color: #fff;
+            background-color: #dcdfd7;
         }
 
         /* Branding Header */
@@ -128,7 +128,7 @@
 
         .candidate-votes {
             font-size: 13px;
-            color: #718096;
+            color: #38424f;
             margin-bottom: 10px;
         }
 
@@ -150,12 +150,12 @@
             border-top-left-radius: 4px;
             border-top-right-radius: 4px;
             /* Default Color */
-            background-color: #4299e1; /* Blue */
+            background-color: #CA9263; /* Amber */
         }
         
         /* Winner / Colors */
         .winner .bar {
-            background-color: #f56565; /* Red/Distinctive */
+            background-color: #113e67; /* Blue */
         }
 
         .percentage-label {
@@ -172,13 +172,43 @@
 
         /* Print Specifics */
         @media print {
+            @page {
+                margin: 0.5cm;
+            }
             body {
                 padding: 0;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
+            .brand-header {
+                margin-bottom: 20px;
+                padding-bottom: 10px;
+                border-bottom-width: 2px;
+            }
             .position-section {
+                margin-bottom: 30px;
                 break-inside: avoid;
+                page-break-inside: avoid;
+            }
+            .results-grid {
+                min-height: 280px; /* Reduced from 350px */
+            }
+            .bar-container {
+                height: 150px; /* Reduced from 200px */
+            }
+            .candidate-photo {
+                width: 80px; /* Slightly smaller photos */
+                height: 80px;
+            }
+            .winner-star {
+                width: 24px;
+                height: 24px;
+                font-size: 14px;
+            }
+            .percentage-label {
+                color: #f4f4f4;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
             }
             .bar, .position-title, .winner-star {
                 -webkit-print-color-adjust: exact;
@@ -186,13 +216,7 @@
             }
         }
         
-        /* Color Palette for different candidates if not winner-based could utilize nth-child */
-        .candidate-card:nth-child(odd) .bar:not(.winner .bar) {
-             background-color: #4299e1;
-        }
-        .candidate-card:nth-child(even) .bar:not(.winner .bar) {
-             background-color: #2b6cb0;
-        }
+
 
     </style>
 </head>
@@ -201,7 +225,7 @@
     <div class="brand-header">
         <div class="logo-container">
             @if($election->organization && $election->organization->logo_path)
-                <img src="{{ asset('storage/' . $election->organization->logo_path) }}" alt="Logo" class="brand-logo">
+                <img src="{{ asset('storage/' . $election->organization->logo_path) }}" alt="{{ $election->organization->name }} logo" class="brand-logo">
             @else
                 <h2 style="margin:0;">{{ $election->organization->name ?? 'Elections HQ' }}</h2>
             @endif
@@ -244,7 +268,7 @@
 
                         {{-- Bar Graph --}}
                         <div class="bar-container">
-                            <div class="bar" style="height: {{ max(5, $candidate['percentage']) }}%;">
+                            <div class="bar" style="height: {{ $candidate['percentage'] }}%;">
                                 <div class="percentage-label">{{ $candidate['percentage'] }}%</div>
                             </div>
                         </div>
