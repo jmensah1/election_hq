@@ -1,4 +1,4 @@
-@props(['organization', 'brandName', 'logoUrl'])
+@props(['organization', 'brandName' => 'Elections HQ', 'logoUrl' => null])
 
 <nav class="fixed w-full z-50 transition-all duration-300 bg-slate-950/80 backdrop-blur-md border-b border-white/5">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

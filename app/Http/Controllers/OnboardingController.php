@@ -293,11 +293,15 @@ class OnboardingController extends Controller
         try {
             // Send Email to Admin
             Mail::to('joseph.mensah@jbmensah.com')->send(new NewLeadAdminNotification($lead));
+        } catch (\Exception $e) {
+            Log::error('Failed to send admin onboarding email', ['error' => $e->getMessage()]);
+        }
 
+        try {
             // Send Confirmation to User
             Mail::to($lead->email)->send(new LeadReceivedConfirmation($lead));
         } catch (\Exception $e) {
-            Log::error('Failed to send onboarding emails', ['error' => $e->getMessage()]);
+            Log::error('Failed to send user onboarding email', ['error' => $e->getMessage()]);
         }
 
         // Send SMS to Admin

@@ -12,7 +12,7 @@
             @endif
         </div>
         <div class="text-slate-500 text-sm">
-            &copy; {{ date('Y') }} {{ $brandName }}. All rights reserved.
+            &copy; {{ date('Y') }} {{ $brandName ?? 'Elections HQ' }}. All rights reserved.
         </div>
     </div>
 </footer>

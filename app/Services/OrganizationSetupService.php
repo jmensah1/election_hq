@@ -35,7 +35,7 @@ class OrganizationSetupService
         // Create organization
         $organization = Organization::create([
             'name' => $data['organization_name'],
-            'slug' => Str::slug($data['organization_name']),
+            'slug' => $this->generateUniqueSlug($data['organization_name']),
             'subdomain' => strtolower($data['subdomain']),
             'timezone' => $data['timezone'],
             'logo_path' => $logoPath,
@@ -77,5 +77,21 @@ class OrganizationSetupService
         ]);
 
         return $organization;
+    }
+    /**
+     * Generate a unique slug for the organization.
+     */
+    protected function generateUniqueSlug(string $name): string
+    {
+        $slug = Str::slug($name);
+        $originalSlug = $slug;
+        $count = 1;
+
+        while (Organization::where('slug', $slug)->exists()) {
+            $slug = "{$originalSlug}-{$count}";
+            $count++;
+        }
+
+        return $slug;
     }
 }
