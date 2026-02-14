@@ -132,6 +132,7 @@
                         @endif
                     @else
                         <!-- Main Domain: Marketing Navigation -->
+                        <a href="{{ route('why-choose-us') }}" class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Why Choose Us</a>
                         <a href="#pricing" class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Pricing</a>
                         <a href="#contact" class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Contact Us</a>
                     @endif
@@ -195,6 +196,9 @@
                     </a>
                     <a href="#features" class="px-8 py-4 bg-slate-800/50 hover:bg-slate-800 text-white font-semibold rounded-lg border border-slate-700 backdrop-blur-sm transition-all hover:border-slate-500">
                         Learn How it Works
+                    </a>
+                    <a href="{{ route('why-choose-us') }}" class="px-8 py-4 bg-slate-800/50 hover:bg-slate-800 text-white font-semibold rounded-lg border border-slate-700 backdrop-blur-sm transition-all hover:border-slate-500">
+                        Why Choose Us
                     </a>
                 @endif
             </div>
@@ -268,6 +272,8 @@
                             One platform, infinite organizations. Securely isolated environments for universities, unions, and corporate boards with custom domains and branding.
                         </p>
                     </div>
+
+
                 </div>
             </div>
         </div>

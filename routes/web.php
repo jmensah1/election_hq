@@ -10,6 +10,8 @@ Route::get('/', function () {
 
 Route::post('/contact', [App\Http\Controllers\ContactController::class, 'store'])->name('contact.store');
 
+Route::view('/why-choose-us', 'why-choose-us')->name('why-choose-us');
+
  
 
 // 2. Create a dedicated login route that shows the login page
