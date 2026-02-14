@@ -15,7 +15,12 @@ class VotingController extends Controller
             ->orderBy('voting_end_date', 'asc')
             ->get();
 
-        return view('voter.elections', compact('elections'));
+        // Optimize: Fetch all vote confirmations for these elections for the current user once
+        $votedElectionIds = VoteConfirmation::where('user_id', auth()->id())
+            ->whereIn('election_id', $elections->pluck('id'))
+            ->pluck('election_id');
+
+        return view('voter.elections', compact('elections', 'votedElectionIds'));
     }
 
     public function show(Election $election)

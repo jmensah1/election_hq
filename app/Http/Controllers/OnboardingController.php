@@ -8,6 +8,7 @@ use App\Models\Payment;
 use App\Models\User;
 use App\Mail\NewLeadAdminNotification;
 use App\Mail\LeadReceivedConfirmation;
+use App\Services\OrganizationSetupService;
 use App\Services\PaystackService;
 use App\Services\PlanLimitService;
 use Illuminate\Http\Request;
@@ -20,7 +21,8 @@ use Illuminate\Validation\Rule;
 class OnboardingController extends Controller
 {
     public function __construct(
-        protected PaystackService $paystackService
+        protected PaystackService $paystackService,
+        protected OrganizationSetupService $organizationSetupService
     ) {}
 
     public function create(Request $request)
@@ -37,7 +39,7 @@ class OnboardingController extends Controller
             'email' => 'required|email|max:255',
             'phone' => 'required|string|max:20',
             'organization_name' => 'required|string|max:255',
-            'plan_tier' => ['required', Rule::in(['new', 'basic', 'premium', 'enterprise'])],
+            'plan_tier' => ['required', Rule::in(array_keys(config('pricing.plans', [])))],
             'billing_cycle' => ['required', Rule::in(['monthly', 'annual'])],
             'message' => 'nullable|string|max:1000',
         ]);
@@ -215,72 +217,32 @@ class OnboardingController extends Controller
             $logoPath = $request->file('logo')->store('organizations/logos', 'public');
         }
 
-        // Get plan limits
-        $planLimitService = app(PlanLimitService::class);
-        $planLimits = $planLimitService->getPlanLimits($lead->plan_tier);
+        try {
+            // Create Organization using service
+            $organization = $this->organizationSetupService->createOrganization(
+                lead: $lead,
+                data: $validated,
+                logoPath: $logoPath
+            );
 
-        // Calculate subscription expiry
-        $expiresAt = $lead->billing_cycle === 'annual' 
-            ? now()->addYear() 
-            : now()->addMonth();
+            // Update lead status
+            $lead->update(['status' => 'setup_complete']);
 
-        // Create organization
-        $organization = Organization::create([
-            'name' => $validated['organization_name'],
-            'slug' => Str::slug($validated['organization_name']),
-            'subdomain' => strtolower($validated['subdomain']),
-            'timezone' => $validated['timezone'],
-            'logo_path' => $logoPath,
-            'status' => 'active',
-            'subscription_plan' => $lead->plan_tier,
-            'subscription_expires_at' => $expiresAt,
-            'max_voters' => $planLimits['max_voters'] ?? 100,
-            'sms_enabled' => $planLimits['sms_enabled'] ?? false,
-        ]);
+            // Send notifications
+            $this->sendNotifications($lead, $payment);
 
-        // Find or create admin user
-        $user = User::where('email', $lead->email)->first();
-        
-        if (!$user) {
-            $user = User::create([
-                'name' => $validated['admin_name'],
-                'email' => $lead->email,
-                'phone' => $lead->phone,
-                'password' => Hash::make($validated['password']),
-            ]);
-        } else {
-            // Update existing user's password
-            $user->update([
-                'name' => $validated['admin_name'],
-                'password' => Hash::make($validated['password']),
-            ]);
+            $baseDomain = parse_url(config('app.url'), PHP_URL_HOST) ?? 'elections-hq.com';
+            $loginUrl = "https://{$organization->subdomain}.{$baseDomain}/admin/login";
+
+            return redirect()->route('onboarding.success')
+                ->with('organization', $organization)
+                ->with('login_url', $loginUrl)
+                ->with('setup_complete', true);
+
+        } catch (\Exception $e) {
+            Log::error('Organization setup failed', ['error' => $e->getMessage()]);
+            return back()->withInput()->with('error', 'Setup failed. Please try again or contact support.');
         }
-
-        // Attach user as admin
-        $canVote = !empty($validated['will_vote']) && $validated['will_vote'] == 1;
-        $voterId = $canVote ? $validated['voter_id'] : null;
-
-        $organization->users()->attach($user->id, [
-            'role' => 'admin',
-            'status' => 'active',
-            'can_vote' => $canVote,
-            'voter_id' => $voterId,
-            'allowed_email' => $user->email,
-        ]);
-
-        // Update lead status
-        $lead->update(['status' => 'setup_complete']);
-
-        // Send notifications
-        $this->sendNotifications($lead, $payment);
-
-        $baseDomain = parse_url(config('app.url'), PHP_URL_HOST) ?? 'elections-hq.com';
-        $loginUrl = "https://{$organization->subdomain}.{$baseDomain}/admin/login";
-
-        return redirect()->route('onboarding.success')
-            ->with('organization', $organization)
-            ->with('login_url', $loginUrl)
-            ->with('setup_complete', true);
     }
 
     /**
@@ -311,13 +273,13 @@ class OnboardingController extends Controller
         $plans = config('pricing.plans');
 
         if (!isset($plans[$planTier])) {
-            throw new \InvalidArgumentException("Invalid plan tier: {$planTier}");
+            abort(400, "Invalid plan tier: {$planTier}");
         }
 
         $amount = $plans[$planTier][$billingCycle] ?? null;
 
         if (!$amount) {
-            throw new \InvalidArgumentException("Invalid billing cycle for plan: {$planTier}");
+            abort(400, "Invalid billing cycle for plan: {$planTier}");
         }
 
         return $amount;
@@ -328,11 +290,15 @@ class OnboardingController extends Controller
      */
     protected function sendNotifications(Lead $lead, ?Payment $payment = null): void
     {
-        // Send Email to Admin
-        Mail::to('joseph.mensah@jbmensah.com')->send(new NewLeadAdminNotification($lead));
+        try {
+            // Send Email to Admin
+            Mail::to('joseph.mensah@jbmensah.com')->send(new NewLeadAdminNotification($lead));
 
-        // Send Confirmation to User
-        Mail::to($lead->email)->send(new LeadReceivedConfirmation($lead));
+            // Send Confirmation to User
+            Mail::to($lead->email)->send(new LeadReceivedConfirmation($lead));
+        } catch (\Exception $e) {
+            Log::error('Failed to send onboarding emails', ['error' => $e->getMessage()]);
+        }
 
         // Send SMS to Admin
         try {

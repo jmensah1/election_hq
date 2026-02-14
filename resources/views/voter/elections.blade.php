@@ -32,13 +32,7 @@
                             </div>
                             
                             <div class="flex-shrink-0">
-                                @php
-                                    $hasVoted = \App\Models\VoteConfirmation::where('election_id', $election->id)
-                                        ->where('user_id', auth()->id())
-                                        ->exists();
-                                @endphp
-
-                                @if($hasVoted)
+                                @if($votedElectionIds->contains($election->id))
                                     <div class="flex flex-col items-center">
                                          <span class="bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 px-6 py-3 rounded-lg font-medium cursor-not-allowed">
                                             Vote Cast
